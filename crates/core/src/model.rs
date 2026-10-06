@@ -2,6 +2,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Component {
+    /// The component's filename stem (e.g. `quake-strafe-movement` for
+    /// `quake-strafe-movement.yaml`) — the component's id. Never present in
+    /// the authored YAML (the schema's `additionalProperties: false` would
+    /// reject it there); set programmatically in `validate::validate_one`
+    /// after the file passes validation, so every `Component` the rest of
+    /// the codebase sees has it populated.
+    #[serde(default)]
+    pub slug: String,
     pub name: String,
     pub category: String,
     pub summary: String,

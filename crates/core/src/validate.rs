@@ -65,6 +65,18 @@ pub fn load_and_validate_components(dir: &Path) -> (Vec<Component>, Vec<Validati
     (valid, errors)
 }
 
+/// Validates a single file against the schema and the non-schema rules,
+/// independent of any directory scan. Used by `decdev validate <path>` for
+/// explicit file arguments. Recompiles the schema validator on each call —
+/// fine at CLI-invocation scale, not meant for hot loops.
+pub fn validate_file(path: &Path) -> Result<Component, String> {
+    let schema_value: serde_json::Value = serde_json::from_str(SCHEMA_STR)
+        .expect("embedded schema/component.schema.json must be valid JSON");
+    let validator = jsonschema::validator_for(&schema_value)
+        .expect("embedded schema/component.schema.json must be a valid JSON Schema");
+    validate_one(path, &validator)
+}
+
 fn validate_one(path: &Path, validator: &jsonschema::Validator) -> Result<Component, String> {
     let content = std::fs::read_to_string(path).map_err(|e| format!("could not read file: {e}"))?;
     let value: serde_json::Value =
@@ -126,8 +138,15 @@ fn validate_one(path: &Path, validator: &jsonschema::Validator) -> Result<Compon
         }
     }
 
-    serde_json::from_value(value)
-        .map_err(|e| format!("failed to deserialize into Component after passing validation: {e}"))
+    let mut component: Component = serde_json::from_value(value).map_err(|e| {
+        format!("failed to deserialize into Component after passing validation: {e}")
+    })?;
+    component.slug = path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or_default()
+        .to_string();
+    Ok(component)
 }
 
 #[cfg(test)]
