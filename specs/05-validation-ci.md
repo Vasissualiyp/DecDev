@@ -36,6 +36,33 @@ telling the contributor to use an SPDX identifier or open an issue if
 their license genuinely isn't on the list yet — don't silently accept
 arbitrary strings.
 
+## Link check
+
+Every `implementations[].url` and `implementations[].demo_url` in
+`/components` must resolve. This exists specifically because an AI
+coding agent once filled an entire seed set with plausible-looking but
+entirely fabricated `github.com/...` URLs (see git history/incident
+notes around the first real seed components) — "don't invent links" as
+a written rule alone did not prevent that, so it's also a mechanical CI
+check, not optional.
+
+Implementation: a small script (`scripts/check-links.sh` or a `cli/`
+dev-only subcommand — either is fine, it does NOT need to go through
+`decdev-core`'s validation pipeline since this is a network check, not a
+schema check) that collects every `url`/`demo_url` from
+`load_and_validate_components()`'s output and sends an HTTP
+HEAD request to each (follow redirects; treat anything outside 2xx/3xx,
+including timeouts, as a failure after one retry). Runs over the real
+`/components` directory in CI, never as part of `cargo test` — network
+calls don't belong in the unit/integration test suite (flaky, slow,
+and not what `cargo test --workspace` is for). Fail the CI job on any
+non-resolving link, printing the offending file and URL.
+
+This check only catches a link being dead *right now* — it doesn't
+verify the content behind it actually matches the spec (that's still a
+human PR-review judgment call), and it can't run usefully offline. Both
+are acceptable limits; "the link exists" is the floor, not the whole bar.
+
 ## `.github/workflows/ci.yml`
 
 Triggers: `pull_request` and `push` to the default branch.
@@ -54,14 +81,16 @@ later step masks an earlier failure):
    distinct from the unit/integration tests in step 3 which run against
    fixtures. Fail the job on any validation error, printing every failing
    file's errors (not just the first).
-7. Setup Node (version pinned in `site/package.json`'s `engines`, or LTS
+7. Link check (see above) against the real `/components` directory. Fail
+   the job on any non-resolving `url`/`demo_url`.
+8. Setup Node (version pinned in `site/package.json`'s `engines`, or LTS
    if unset); `npm ci --prefix site`.
-8. `cargo run --release -p cli -- export > site/src/data/components.json`
+9. `cargo run --release -p cli -- export > site/src/data/components.json`
    — if this fails (per `specs/04-cli.md`'s strict behavior), stop here;
    don't let the site build proceed on missing/partial data.
-9. `npm run build --prefix site` (runs `astro build` + the Pagefind
-   post-build step) — this is also where a component with a valid schema
-   but a template-breaking edge case would surface, before merge.
+10. `npm run build --prefix site` (runs `astro build` + the Pagefind
+    post-build step) — this is also where a component with a valid
+    schema but a template-breaking edge case would surface, before merge.
 
 ## Required human gate (not automatable by CI)
 

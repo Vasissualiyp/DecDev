@@ -28,9 +28,9 @@ capability:
 implementations:
   - engine: Unity
     language: C#
-    url: https://github.com/example/unity-orbit-camera
-    license: MIT
-    maturity: production-tested
+    url: https://github.com/juicycleff/Unity-3rd-Person-Orbit-Follow-Camera
+    license: GPL-3.0
+    maturity: prototype
 license: CC-BY-4.0
 provenance:
   type: original

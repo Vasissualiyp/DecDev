@@ -69,9 +69,13 @@ No website, no full CLI, no CI yet beyond the scaffolding above.
    `implementations[]` entry), the search box returns the Quake component
    for the query "strafe", *and* the `site/` tests in
    `specs/07-testing.md` pass.
-7. `.github/workflows/ci.yml` per `specs/05-validation-ci.md`. **Done when**:
-   a PR that adds an intentionally invalid YAML file fails the workflow with
-   a readable error, and a PR with a valid file passes.
+7. `.github/workflows/ci.yml` per `specs/05-validation-ci.md`, including
+   the link-check step. **Done when**: a PR that adds an intentionally
+   invalid YAML file fails the workflow with a readable error, a PR that
+   adds a component with a dead/fabricated `url` fails the link-check
+   step specifically (test this with a deliberately fake URL, not just a
+   schema-invalid file — they're different failure modes), and a PR with
+   a valid file and real, resolving links passes.
 8. `CONTRIBUTING.md` with the spec template from `specs/01-...md` and the
    human-gate note from `specs/05-...md`. **Done when**: a new contributor
    could follow it to add one component without reading any other spec

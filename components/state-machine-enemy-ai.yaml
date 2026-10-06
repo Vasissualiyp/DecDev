@@ -29,12 +29,12 @@ capability:
 implementations:
   - engine: Unreal
     language: C++
-    url: https://github.com/example/unreal-fsm-ai
+    url: https://github.com/Xyzyx101/UE4_FSM
     license: MIT
-    maturity: production-tested
+    maturity: prototype
   - engine: Godot
     language: GDScript
-    url: https://github.com/example/godot-fsm-ai
+    url: https://github.com/metanoia83/Godot-4.0-Basic-Character-Controller-and-Enemy-AI
     license: MIT
     maturity: prototype
 license: CC-BY-4.0

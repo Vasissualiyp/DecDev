@@ -28,9 +28,9 @@ capability:
 implementations:
   - engine: Godot
     language: GDScript
-    url: https://github.com/example/godot-hitscan-weapon
+    url: https://github.com/GarbajYT/godot-hitscan-weapons
     license: MIT
-    maturity: usable
+    maturity: prototype
 license: CC-BY-4.0
 provenance:
   type: original

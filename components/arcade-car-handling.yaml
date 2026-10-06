@@ -28,9 +28,9 @@ capability:
 implementations:
   - engine: Unity
     language: C#
-    url: https://github.com/example/unity-arcade-car
+    url: https://github.com/burhanreyhani/unity-basic-arcade-car-controller
     license: MIT
-    maturity: usable
+    maturity: prototype
 license: CC-BY-4.0
 provenance:
   type: original

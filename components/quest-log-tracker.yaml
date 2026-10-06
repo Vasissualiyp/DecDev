@@ -26,8 +26,8 @@ capability:
   determinism: strict
 implementations:
   - engine: Godot
-    language: C#
-    url: https://github.com/example/godot-quest-log
+    language: GDScript
+    url: https://github.com/shomykohai/quest-system
     license: MIT
     maturity: usable
 license: CC-BY-4.0

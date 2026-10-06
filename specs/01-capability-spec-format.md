@@ -149,6 +149,23 @@ covered by required test cases in `specs/07-testing.md`):
    file fails validation — an "open source derived" component with no
    pointer to what it was derived from is not meaningfully attributed.
 
+## `implementations[].url` and `demo_url` must be real — no exceptions
+
+Every link in a component spec must point to something that actually
+exists and that the contributor has personally verified resolves (a
+real `curl`/browser check, not "it looks like a plausible URL"). This
+includes not pattern-matching this very document's example below — its
+URL uses the reserved `.invalid` TLD and says "REPLACE WITH A REAL
+VERIFIED URL" specifically so it can never be mistaken for something to
+copy. Inventing a plausible-looking `github.com/...` URL instead of
+sourcing (or just leaving unfilled) a real one is fabrication, full stop.
+
+This is enforced mechanically, not just by convention: CI runs a
+link-check step (HEAD-request every `url`/`demo_url` in
+`/components`, fail on anything that doesn't 2xx/3xx — see
+`specs/05-validation-ci.md`), because "please don't invent links" is
+not a control, it's a hope.
+
 ## Example: `/components/quake-strafe-movement.yaml`
 
 ```yaml
@@ -182,7 +199,7 @@ capability:
 implementations:
   - engine: engine-agnostic
     language: C#
-    url: https://github.com/example/quake-movement-csharp
+    url: https://example.invalid/REPLACE-WITH-A-REAL-VERIFIED-URL
     license: MIT
     maturity: usable
 license: CC-BY-4.0

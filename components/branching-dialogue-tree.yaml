@@ -26,8 +26,8 @@ capability:
   determinism: strict
 implementations:
   - engine: Unreal
-    language: C++
-    url: https://github.com/example/unreal-dialogue-graph
+    language: Blueprint
+    url: https://github.com/gerlogu/GraphDialogueSystem
     license: MIT
     maturity: prototype
 license: CC-BY-4.0

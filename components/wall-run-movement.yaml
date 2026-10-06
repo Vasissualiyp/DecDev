@@ -29,12 +29,12 @@ capability:
 implementations:
   - engine: Unreal
     language: C++
-    url: https://github.com/example/unreal-wallrun
+    url: https://github.com/BrianPim/UE5-Wall-Running-Plugin
     license: MIT
-    maturity: usable
+    maturity: prototype
   - engine: Unity
     language: C#
-    url: https://github.com/example/unity-wallrun
+    url: https://github.com/CoffweDev/physics-based-wallrunning-unity
     license: MIT
     maturity: prototype
 license: CC-BY-4.0

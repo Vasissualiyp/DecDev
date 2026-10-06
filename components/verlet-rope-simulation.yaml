@@ -25,9 +25,9 @@ capability:
     - "The pinned point never moves except via its anchor."
   determinism: best-effort
 implementations:
-  - engine: engine-agnostic
-    language: C++
-    url: https://github.com/example/verlet-rope
+  - engine: Unity
+    language: C#
+    url: https://github.com/GaryMcWhorter/Verlet-Chain-Unity
     license: MIT
     maturity: usable
 license: CC-BY-4.0

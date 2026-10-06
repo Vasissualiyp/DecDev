@@ -26,11 +26,11 @@ capability:
     - "Air acceleration is capped independently of ground acceleration."
   determinism: best-effort
 implementations:
-  - engine: engine-agnostic
+  - engine: Unity
     language: C#
-    url: https://github.com/example/quake-movement-csharp
+    url: https://github.com/SayamSyed/Physics-Accurate-Advanced-Movement-FPS
     license: MIT
-    maturity: usable
+    maturity: prototype
 license: CC-BY-4.0
 provenance:
   type: original

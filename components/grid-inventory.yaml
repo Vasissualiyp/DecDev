@@ -26,9 +26,9 @@ capability:
     - "Every stored item is fully inside the grid bounds."
   determinism: strict
 implementations:
-  - engine: engine-agnostic
-    language: TypeScript
-    url: https://github.com/example/ts-grid-inventory
+  - engine: Unity
+    language: C#
+    url: https://github.com/SinlessDevil/TetrisInventorySystem
     license: MIT
     maturity: usable
 license: CC-BY-4.0

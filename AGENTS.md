@@ -41,6 +41,14 @@ up work here, your first job is almost certainly something from
 - Every component spec under `/components` must validate against
   `/schema/component.schema.json` (once it exists). A PR that adds an
   invalid spec should fail CI, not get hand-waved.
+- **Every `url`/`demo_url` in a component spec must be a real link you
+  have personally verified resolves — never invent one, including by
+  copying the placeholder pattern from `specs/01-capability-spec-format.md`'s
+  example.** This happened once already (an agent filled an entire seed
+  set with fabricated `github.com/...` links that all 404'd) — it is now
+  also a mechanical CI link-check (`specs/05-validation-ci.md`), but the
+  rule exists independent of the check: don't wait for CI to catch what
+  you already know you didn't verify.
 
 ## Stack
 
