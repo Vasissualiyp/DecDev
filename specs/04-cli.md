@@ -8,8 +8,8 @@ schema logic, only argument handling and output formatting. Reads
 find a `components/` directory — don't hardcode an absolute path.
 
 Packaging: `cargo install --path cli` installs a `decdev` binary on
-`PATH`. For local development, `cargo run -p cli -- <command>` from the
-repo root. CI builds it once (`cargo build --release -p cli`) and reuses
+`PATH`. For local development, `cargo run -p decdev -- <command>` from the
+repo root. CI builds it once (`cargo build --release -p decdev`) and reuses
 the binary for both the `validate` CI step and the `export` step feeding
 the website build (see `specs/05-validation-ci.md`).
 

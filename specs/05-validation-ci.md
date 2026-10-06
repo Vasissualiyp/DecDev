@@ -76,7 +76,7 @@ later step masks an earlier failure):
 3. `cargo test --workspace` (per `specs/07-testing.md`)
 4. `cargo clippy --workspace -- -D warnings`
 5. `cargo fmt --check`
-6. `cargo run --release -p cli -- validate` with no arguments, i.e.
+6. `cargo run --release -p decdev -- validate` with no arguments, i.e.
    against the real `/components` directory — this is a *data* check,
    distinct from the unit/integration tests in step 3 which run against
    fixtures. Fail the job on any validation error, printing every failing
@@ -85,7 +85,7 @@ later step masks an earlier failure):
    the job on any non-resolving `url`/`demo_url`.
 8. Setup Node (version pinned in `site/package.json`'s `engines`, or LTS
    if unset); `npm ci --prefix site`.
-9. `cargo run --release -p cli -- export > site/src/data/components.json`
+9. `cargo run --release -p decdev -- export > site/src/data/components.json`
    — if this fails (per `specs/04-cli.md`'s strict behavior), stop here;
    don't let the site build proceed on missing/partial data.
 10. `npm run build --prefix site` (runs `astro build` + the Pagefind

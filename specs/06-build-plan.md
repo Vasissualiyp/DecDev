@@ -37,7 +37,7 @@ an acceptance criterion.
 3. Add `cli` to the workspace (`decdev`, depends on `decdev-core` via path)
    with just the `export` command (full `clap` command set is Tier 2 task
    5) writing the component list as JSON to stdout, per
-   `specs/04-cli.md`. **Done when**: `cargo run -p cli -- export` against
+   `specs/04-cli.md`. **Done when**: `cargo run -p decdev -- export` against
    the 10 seed files prints a correct 10-element JSON array and exits 0.
 
 No website, no full CLI, no CI yet beyond the scaffolding above.

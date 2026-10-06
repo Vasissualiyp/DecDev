@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust (auto-detects rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@master
+
+      - name: Cache cargo registry and target
+        uses: Swatinem/rust-cache@v2
+
+      - name: cargo build --workspace
+        run: cargo build --workspace
+
+      - name: cargo test --workspace
+        run: cargo test --workspace
+
+      - name: cargo clippy -- -D warnings
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: cargo fmt --check
+        run: cargo fmt --check
+
+      - name: Install decdev onto PATH
+        run: cargo install --path cli --locked
+
+      - name: decdev validate (real /components directory)
+        run: decdev validate
+
+      - name: Link check (every implementation url/demo_url must resolve)
+        run: bash scripts/check-links.sh
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: npm ci
+        run: npm ci --prefix site
+
+      - name: decdev export -> site/src/data/components.json
+        run: decdev export > site/src/data/components.json
+
+      - name: Build the website (astro build + pagefind postbuild)
+        run: npm run build --prefix site
+
+      - name: Site tests (vitest)
+        run: npm test --prefix site
