@@ -1,0 +1,186 @@
+---
+import {
+  loadComponents,
+  distinctEngines,
+  distinctImplementationLicenses,
+  distinctMaturities,
+} from "../lib/load-components";
+import { categoryEnum, engineEnum, maturityEnum } from "../lib/schema-enums";
+
+const components = loadComponents().slice().sort((a, b) => a.name.localeCompare(b.name));
+
+// Facet option lists: category/engine/maturity use the schema's own closed
+// enum (there's no value that could exist outside it); genre/license have
+// no schema enum, so they're derived purely from what's actually present.
+const categories = categoryEnum();
+const engines = engineEnum();
+const maturities = maturityEnum();
+const genres = [...new Set(components.flatMap((c) => c.genre_tags))].sort();
+const licenses = [...new Set(components.flatMap((c) => distinctImplementationLicenses(c)))].sort();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DecDev — game capability catalog</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 1.5rem;
+        line-height: 1.5;
+      }
+      header p {
+        color: #555;
+      }
+      #search-input {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.5rem;
+        box-sizing: border-box;
+      }
+      #search-results a {
+        display: block;
+        padding: 0.25rem 0;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 14rem 1fr;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+      }
+      fieldset {
+        border: 1px solid #ccc;
+        margin-bottom: 1rem;
+      }
+      fieldset label {
+        display: block;
+        font-size: 0.9rem;
+      }
+      .component-row {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+      }
+      .component-row h3 {
+        margin: 0 0 0.25rem 0;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 0.75rem;
+        background: #eee;
+        border-radius: 3px;
+        padding: 0.1rem 0.4rem;
+        margin-right: 0.25rem;
+      }
+      .component-row[hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>DecDev</h1>
+      <p>
+        A catalog of reusable, declaratively-specified game-development capabilities. Links out to
+        real implementations — hosts no code itself.
+      </p>
+      <input id="search-input" type="search" placeholder="Search name, summary, description, reference games…" />
+      <div id="search-results"></div>
+    </header>
+
+    <div class="layout">
+      <aside>
+        <fieldset data-facet="category">
+          <legend>Capability</legend>
+          {categories.map((value) => (
+            <label><input type="checkbox" value={value} /> {value}</label>
+          ))}
+        </fieldset>
+        <fieldset data-facet="genre">
+          <legend>Genre</legend>
+          {genres.map((value) => (
+            <label><input type="checkbox" value={value} /> {value}</label>
+          ))}
+        </fieldset>
+        <fieldset data-facet="engine">
+          <legend>Engine</legend>
+          {engines.map((value) => (
+            <label><input type="checkbox" value={value} /> {value}</label>
+          ))}
+        </fieldset>
+        <fieldset data-facet="license">
+          <legend>License</legend>
+          {licenses.map((value) => (
+            <label><input type="checkbox" value={value} /> {value}</label>
+          ))}
+        </fieldset>
+        <fieldset data-facet="maturity">
+          <legend>Maturity</legend>
+          {maturities.map((value) => (
+            <label><input type="checkbox" value={value} /> {value}</label>
+          ))}
+        </fieldset>
+      </aside>
+
+      <main id="component-list">
+        {components.map((c) => (
+          <article
+            class="component-row"
+            data-category={c.category}
+            data-genres={c.genre_tags.join(" ")}
+            data-engines={distinctEngines(c).join(" ")}
+            data-licenses={distinctImplementationLicenses(c).join(" ")}
+            data-maturities={distinctMaturities(c).join(" ")}
+          >
+            <h3><a href={`/components/${c.slug}/`}>{c.name}</a></h3>
+            <p>{c.summary}</p>
+            {c.reference_games.length > 0 && (
+              <p><em>Inspired by: {c.reference_games.join(", ")}</em></p>
+            )}
+            <p>
+              <span class="badge">{c.category}</span>
+              {distinctEngines(c).map((engine) => <span class="badge">{engine}</span>)}
+              {distinctImplementationLicenses(c).map((license) => (
+                <span class="badge">{license}</span>
+              ))}
+            </p>
+          </article>
+        ))}
+      </main>
+    </div>
+
+    <script is:inline src="/filter.js"></script>
+    <script is:inline>
+      async function initPagefindSearch() {
+        const input = document.getElementById("search-input");
+        const results = document.getElementById("search-results");
+        try {
+          const pagefind = await import("/pagefind/pagefind.js");
+          await pagefind.init();
+          input.addEventListener("input", async () => {
+            results.innerHTML = "";
+            if (!input.value) return;
+            const search = await pagefind.search(input.value);
+            for (const r of search.results.slice(0, 20)) {
+              const data = await r.data();
+              const a = document.createElement("a");
+              a.href = data.url;
+              a.textContent = data.meta.title || data.url;
+              results.appendChild(a);
+            }
+          });
+        } catch (e) {
+          // /pagefind/pagefind.js only exists after `npm run build` (the
+          // postbuild step generates it) — not during `astro dev`.
+          console.warn("Pagefind search unavailable (run `npm run build`):", e);
+        }
+      }
+      initPagefindSearch();
+    </script>
+  </body>
+</html>

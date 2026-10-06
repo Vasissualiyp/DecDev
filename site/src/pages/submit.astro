@@ -1,0 +1,58 @@
+---
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Submit a component — DecDev</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 1.5rem;
+        line-height: 1.6;
+      }
+      code {
+        background: #f3f3f3;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+      }
+      ol li {
+        margin-bottom: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/">&larr; Back to catalog</a>
+    <h1>Submit a component</h1>
+    <p>
+      This is not a form — DecDev is a git-based catalog. Every component is a plain YAML file
+      reviewed through a normal pull request.
+    </p>
+    <ol>
+      <li>Fork the repository.</li>
+      <li>
+        Add a file at <code>components/&lt;your-slug&gt;.yaml</code> following the schema in
+        <code>specs/01-capability-spec-format.md</code> — every field, its type, and the required
+        <code>license</code>/<code>provenance</code> rules are documented there.
+      </li>
+      <li>
+        Build the CLI once (<code>cargo install --path cli</code>), then run
+        <code>decdev validate</code> locally — it runs the exact same check CI will run on your
+        PR.
+      </li>
+      <li>Open a pull request.</li>
+    </ol>
+    <p>
+      Every <code>implementations[].url</code> you list must be a real link you've personally
+      verified resolves — see <code>specs/01-capability-spec-format.md</code> for why this is a
+      hard requirement, not a suggestion.
+    </p>
+    <p>
+      Full details, including the human-review gate for anything derived from proprietary source
+      analysis, are in <code>CONTRIBUTING.md</code>.
+    </p>
+  </body>
+</html>

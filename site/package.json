@@ -1,0 +1,26 @@
+{
+  "name": "decdev-site",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "prebuild": "decdev export > src/data/components.json",
+    "build": "astro build",
+    "postbuild": "pagefind --site dist",
+    "dev": "astro dev",
+    "test": "vitest run",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "astro": "^7.3.6"
+  },
+  "devDependencies": {
+    "pagefind": "^1.5.2",
+    "vitest": "^5.0.3",
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^5.7.0",
+    "@types/node": "^26.6.4"
+  }
+}

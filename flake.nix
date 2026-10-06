@@ -32,11 +32,14 @@
             git
           ];
 
+          # Printed to stderr, not stdout: `nix develop --command cargo run
+          # ... > file` must not have this banner corrupt the redirected
+          # output (this bit us for real once — see git history).
           shellHook = ''
-            echo "DecDev dev shell — rustc $(rustc --version), cargo $(cargo --version)"
-            echo "  cargo build --workspace"
-            echo "  cargo test --workspace"
-            echo "  cargo run -p cli -- <command>   # once cli/ exists"
+            echo "DecDev dev shell — rustc $(rustc --version), cargo $(cargo --version)" >&2
+            echo "  cargo build --workspace" >&2
+            echo "  cargo test --workspace" >&2
+            echo "  cargo run -p decdev -- <command>" >&2
           '';
         };
       });

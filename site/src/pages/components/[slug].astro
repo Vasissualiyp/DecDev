@@ -1,0 +1,161 @@
+---
+import { loadComponents, type Component } from "../../lib/load-components";
+
+export function getStaticPaths() {
+  return loadComponents().map((component) => ({
+    params: { slug: component.slug },
+    props: { component },
+  }));
+}
+
+interface Props {
+  component: Component;
+}
+
+const { component } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{component.name} — DecDev</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 1.5rem;
+        line-height: 1.5;
+      }
+      .back {
+        display: inline-block;
+        margin-bottom: 1rem;
+      }
+      .impl-card {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+      }
+      dt {
+        font-weight: bold;
+        margin-top: 0.75rem;
+      }
+      code.inline {
+        background: #f3f3f3;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back" href="/">&larr; Back to catalog</a>
+    <h1>{component.name}</h1>
+    <p>{component.summary}</p>
+    {component.description && <p>{component.description}</p>}
+
+    {component.reference_games.length > 0 && (
+      <p><em>Inspired by: {component.reference_games.join(", ")}</em></p>
+    )}
+
+    <h2>Capability contract</h2>
+    <dl>
+      <dt>Inputs</dt>
+      <dd>
+        <ul>
+          {component.capability.inputs.map((field) => (
+            <li>
+              <code class="inline">{field.name}</code>: {field.type}
+              {field.unit && <> ({field.unit})</>}
+              {field.description && <> — {field.description}</>}
+            </li>
+          ))}
+        </ul>
+      </dd>
+      <dt>Outputs</dt>
+      <dd>
+        <ul>
+          {component.capability.outputs.map((field) => (
+            <li>
+              <code class="inline">{field.name}</code>: {field.type}
+              {field.unit && <> ({field.unit})</>}
+              {field.description && <> — {field.description}</>}
+            </li>
+          ))}
+        </ul>
+      </dd>
+      <dt>Events</dt>
+      <dd>
+        <ul>
+          {component.capability.events.map((event) => (
+            <li>
+              <code class="inline">{event.name}</code>
+              {event.description && <> — {event.description}</>}
+            </li>
+          ))}
+        </ul>
+      </dd>
+      <dt>Dependencies</dt>
+      <dd>
+        {component.capability.dependencies.length > 0
+          ? component.capability.dependencies.join(", ")
+          : "(none)"}
+      </dd>
+      {component.capability.invariants.length > 0 && (
+        <>
+          <dt>Invariants</dt>
+          <dd>
+            <ul>
+              {component.capability.invariants.map((invariant) => <li>{invariant}</li>)}
+            </ul>
+          </dd>
+        </>
+      )}
+      <dt>Determinism</dt>
+      <dd>{component.capability.determinism}</dd>
+    </dl>
+
+    <h2>Implementations</h2>
+    {component.implementations.map((implementation) => (
+      <div class="impl-card">
+        <strong>{implementation.engine}</strong> ({implementation.language})
+        {implementation.maturity && <> — {implementation.maturity}</>}
+        <br />
+        License: {implementation.license}
+        <br />
+        <a href={implementation.url} rel="noopener noreferrer">Repository</a>
+        {implementation.demo_url && (
+          <>
+            {" "}
+            · <a href={implementation.demo_url} rel="noopener noreferrer">Demo</a>
+          </>
+        )}
+      </div>
+    ))}
+
+    <h2>License &amp; provenance</h2>
+    <dl>
+      <dt>Spec license</dt>
+      <dd>{component.license}</dd>
+      <dt>Provenance</dt>
+      <dd>
+        {component.provenance.type}
+        {component.provenance.notes && <> — {component.provenance.notes}</>}
+      </dd>
+      {component.provenance.derived_from && (
+        <>
+          <dt>Derived from</dt>
+          <dd><a href={component.provenance.derived_from} rel="noopener noreferrer">{component.provenance.derived_from}</a></dd>
+        </>
+      )}
+      {component.version && (
+        <>
+          <dt>Version</dt>
+          <dd>{component.version}</dd>
+        </>
+      )}
+    </dl>
+  </body>
+</html>
