@@ -1,0 +1,78 @@
+name: Voxel Terrain Generation
+category: procgen
+summary: Erosion-simulated voxel terrain generation, selectively extracted from an open-source RPG's world crate rather than vendored whole.
+description: >
+  Generates a heightmapped voxel world via hydraulic erosion simulation,
+  climate/biome placement, and river/waterway carving, driven from a single
+  seed. This component demonstrates DecDev's selective-extraction recipe:
+  it pulls only the terrain-simulation module out of a much larger
+  open-source RPG codebase, rather than vendoring the whole game.
+reference_games:
+  - Minecraft
+  - Dwarf Fortress
+  - Cube World
+genre_tags: [sandbox, rpg, open-world]
+capability:
+  inputs:
+    - { name: seed, type: uint32 }
+    - { name: map_size_chunks, type: vector2int }
+  outputs:
+    - { name: height_map, type: HeightMap }
+    - { name: chunk_data, type: SimChunkGrid }
+  events:
+    - { name: GenerationStarted }
+    - { name: GenerationCompleted }
+  dependencies: [SeededRng]
+  invariants:
+    - "Output is reproducible for a given seed and map size."
+    - "Erosion simulation uses floating-point iteration, so results are not guaranteed bit-exact across platforms (determinism: best-effort, not strict)."
+  determinism: best-effort
+implementations:
+  - engine: other
+    language: Rust
+    url: https://github.com/veloren/veloren
+    license: GPL-3.0-or-later
+    maturity: production-tested
+    extraction:
+      include:
+        - "world/src/sim/"
+        - "world/src/lib.rs"
+      entry_points:
+        - { path: "world/src/sim/mod.rs", symbol: "WorldSim::generate", description: "Primary terrain generation entry point — builds the full height/erosion/climate simulation for a world." }
+      exclude:
+        - "world/src/site/"
+        - "world/src/civ/"
+        - "world/src/layer/"
+        - "voxygen/"
+        - "server/"
+        - "client/"
+        - "rtsim/"
+        - "assets/"
+      external_dependencies:
+        - { name: noise, purpose: "Procedural noise functions used by the simulation (confirmed in world/Cargo.toml)." }
+      build_requirements: >
+        Rust, 2024 edition (per the upstream workspace's Cargo.toml). Runs
+        on Veloren's own custom Rust engine, not Unity/Unreal/Godot — hence
+        engine: other above. Also requires Veloren's `common` crate (shared
+        voxel/world primitive types) from the same workspace.
+      notes: >
+        This recipe was verified directly against the real repository
+        (GitHub contents API + raw file fetch, 2026-10-06): world/src/sim/
+        genuinely contains mod.rs, erosion.rs, diffusion.rs, map.rs,
+        location.rs, util.rs, way.rs, and WorldSim::generate is a real
+        public method starting at that file's line 64. It identifies the
+        primary terrain-generation module as a first-pass boundary, not a
+        fully resolved dependency graph — sibling files in world/src/
+        (column.rs, block.rs, index.rs, config.rs) may also be needed
+        depending on which WorldSim methods you call. Verify the exact
+        dependency closure with `cargo build` before finalizing a minimal
+        vendor set.
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/veloren/veloren
+  notes: >
+    Spec and extraction recipe written from direct inspection of the real,
+    public, GPL-3.0-or-later-licensed repository — not from decompiling or
+    reverse-engineering any proprietary game.
+version: 0.1.0

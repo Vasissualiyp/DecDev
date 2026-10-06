@@ -63,7 +63,8 @@
           "url": { "type": "string", "format": "uri" },
           "license": { "type": "string" },
           "maturity": { "type": "string", "enum": ["prototype", "usable", "production-tested"] },
-          "demo_url": { "type": "string", "format": "uri" }
+          "demo_url": { "type": "string", "format": "uri" },
+          "extraction": { "$ref": "#/$defs/extraction" }
         }
       }
     },
@@ -114,6 +115,59 @@
         "name": { "type": "string" },
         "payload": { "type": "string" },
         "description": { "type": "string" }
+      }
+    },
+    "extraction": {
+      "type": "object",
+      "required": ["include", "entry_points"],
+      "additionalProperties": false,
+      "description": "Present only when this implementation is a selectively-extracted subset of a larger upstream project, rather than a dedicated repo for this exact capability. Only valid when the component's provenance.derived_from is set and provenance.type is not proprietary_analysis — see specs/01-capability-spec-format.md. This describes the smallest useful boundary, not the whole upstream repository.",
+      "properties": {
+        "include": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "File/directory paths or globs, relative to the upstream repo root, that must be pulled — the full resolved set, including transitive internal dependencies within the upstream repo. This is the authoritative set of what to copy."
+        },
+        "entry_points": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["path"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "symbol": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          },
+          "description": "The API surface within `include` that an adapter should call into to satisfy this component's own capability interface (the component's top-level `capability` block IS the standardized interface the adapter targets — there is no separate interface schema to define)."
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Sibling subsystems or paths explicitly NOT needed, named for contributor/reviewer clarity. Not mechanically enforced — `include` is already the authoritative set; this just documents what was deliberately left out and why (pair with `notes`)."
+        },
+        "external_dependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "version": { "type": "string" },
+              "purpose": { "type": "string" }
+            }
+          },
+          "description": "Third-party libraries the extracted code needs that are not themselves part of the upstream repo."
+        },
+        "build_requirements": {
+          "type": "string",
+          "description": "Free-text build/runtime requirements: compiler/language standard, platform, engine version, etc."
+        },
+        "notes": { "type": "string" }
       }
     }
   }

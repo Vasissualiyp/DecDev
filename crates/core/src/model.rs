@@ -71,6 +71,47 @@ pub struct Implementation {
     pub maturity: Option<String>,
     #[serde(default)]
     pub demo_url: Option<String>,
+    #[serde(default)]
+    pub extraction: Option<Extraction>,
+}
+
+/// A recipe for pulling the smallest useful subset of a larger upstream
+/// project rather than vendoring the whole repository. Only meaningful
+/// when `provenance.derived_from` is set and `provenance.type` is not
+/// `proprietary_analysis` — see `validate::validate_one` and
+/// `specs/01-capability-spec-format.md`. Deliberately generic: nothing
+/// here keys off the literal string `open_source_derived`, so a future
+/// additional legitimate provenance category needs no changes here.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Extraction {
+    pub include: Vec<String>,
+    pub entry_points: Vec<EntryPoint>,
+    #[serde(default)]
+    pub exclude: Vec<String>,
+    #[serde(default)]
+    pub external_dependencies: Vec<ExternalDependency>,
+    #[serde(default)]
+    pub build_requirements: Option<String>,
+    #[serde(default)]
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EntryPoint {
+    pub path: String,
+    #[serde(default)]
+    pub symbol: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExternalDependency {
+    pub name: String,
+    #[serde(default)]
+    pub version: Option<String>,
+    #[serde(default)]
+    pub purpose: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

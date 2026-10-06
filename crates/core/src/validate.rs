@@ -11,7 +11,9 @@ const ALLOWED_LICENSES: &[&str] = &[
     "CC-BY-4.0",
     "CC0-1.0",
     "GPL-3.0",
+    "GPL-3.0-or-later",
     "LGPL-3.0",
+    "LGPL-3.0-or-later",
 ];
 
 #[derive(Debug, Clone)]
@@ -125,6 +127,11 @@ fn validate_one(path: &Path, validator: &jsonschema::Validator) -> Result<Compon
         }
     }
 
+    let derived_from_present = value
+        .pointer("/provenance/derived_from")
+        .and_then(|v| v.as_str())
+        .is_some_and(|s| !s.is_empty());
+
     if let Some(implementations) = value.get("implementations").and_then(|v| v.as_array()) {
         for (i, impl_value) in implementations.iter().enumerate() {
             if let Some(license) = impl_value.get("license").and_then(|v| v.as_str()) {
@@ -132,6 +139,25 @@ fn validate_one(path: &Path, validator: &jsonschema::Validator) -> Result<Compon
                     return Err(format!(
                         "implementations[{i}].license '{license}' is not on the allow-list ({})",
                         ALLOWED_LICENSES.join(", ")
+                    ));
+                }
+            }
+
+            // Extraction recipes are deliberately NOT tied to the literal
+            // "open_source_derived" string — any provenance that isn't
+            // proprietary_analysis and names a derived_from source
+            // qualifies, so a future additional legitimate provenance
+            // category needs no changes here. See
+            // specs/01-capability-spec-format.md.
+            if impl_value.get("extraction").is_some() {
+                if provenance_type == Some("proprietary_analysis") {
+                    return Err(format!(
+                        "implementations[{i}].extraction is not allowed when provenance.type is proprietary_analysis — extraction recipes may only reference legitimately-licensed sources"
+                    ));
+                }
+                if !derived_from_present {
+                    return Err(format!(
+                        "implementations[{i}].extraction requires a non-empty provenance.derived_from naming the upstream source"
                     ));
                 }
             }
@@ -443,6 +469,67 @@ provenance:
     #[test]
     fn unrecognized_license_fails() {
         let yaml = MINIMAL_VALID.replace("license: MIT", "license: WTFPL");
+        assert!(validate_single(&yaml).is_err());
+    }
+
+    const EXTRACTION_BLOCK: &str = "\n    extraction:\n      include: [\"src/physics/vehicle.cpp\"]\n      entry_points:\n        - { path: \"src/physics/vehicle.cpp\", symbol: \"VehicleStep\" }\n";
+
+    fn with_extraction(provenance_block: &str) -> String {
+        let with_impl = MINIMAL_VALID.replacen(
+            "    license: MIT\n",
+            &format!("    license: MIT{EXTRACTION_BLOCK}"),
+            1,
+        );
+        with_impl.replacen("provenance:\n  type: original\n", provenance_block, 1)
+    }
+
+    #[test]
+    fn extraction_without_derived_from_fails() {
+        // provenance.type: original never sets derived_from, regardless of
+        // extraction being present.
+        let yaml = with_extraction("provenance:\n  type: original\n");
+        assert!(validate_single(&yaml).is_err());
+    }
+
+    #[test]
+    fn extraction_on_proprietary_analysis_fails_even_with_legal_review_and_derived_from() {
+        // Extraction must never be reachable via the proprietary_analysis
+        // path, no matter what else is set — this is the hard legal
+        // boundary, not just a missing-field check.
+        let yaml = with_extraction(
+            "provenance:\n  type: proprietary_analysis\n  legal_review: true\n  derived_from: https://example.invalid/upstream\n",
+        );
+        assert!(validate_single(&yaml).is_err());
+    }
+
+    #[test]
+    fn extraction_with_open_source_derived_and_derived_from_passes() {
+        let yaml = with_extraction(
+            "provenance:\n  type: open_source_derived\n  derived_from: https://example.invalid/upstream\n",
+        );
+        assert_eq!(validate_single(&yaml), Ok(()));
+    }
+
+    #[test]
+    fn extraction_with_a_different_non_proprietary_provenance_type_also_passes() {
+        // The deliberate genericity test: this is clean_room, NOT
+        // open_source_derived, and extraction still passes because the
+        // rule keys off derived_from + "not proprietary_analysis", never
+        // the literal string "open_source_derived". A future additional
+        // legitimate provenance category would pass this same way.
+        let yaml = with_extraction(
+            "provenance:\n  type: clean_room\n  derived_from: https://example.invalid/upstream\n",
+        );
+        assert_eq!(validate_single(&yaml), Ok(()));
+    }
+
+    #[test]
+    fn extraction_missing_entry_points_fails_schema_validation() {
+        let yaml = MINIMAL_VALID.replacen(
+            "    license: MIT\n",
+            "    license: MIT\n    extraction:\n      include: [\"src/a.cpp\"]\n",
+            1,
+        );
         assert!(validate_single(&yaml).is_err());
     }
 

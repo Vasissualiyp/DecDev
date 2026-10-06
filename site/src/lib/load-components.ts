@@ -35,6 +35,33 @@ export interface Implementation {
   license: string;
   maturity?: string;
   demo_url?: string;
+  extraction?: Extraction;
+}
+
+/** A recipe for pulling the smallest useful subset of a larger upstream
+ * project rather than vendoring the whole repository. Only valid when the
+ * component's provenance.derived_from is set and provenance.type is not
+ * proprietary_analysis — enforced in crates/core, not re-checked here (see
+ * specs/00-overview.md on why site/ never re-implements validation). */
+export interface Extraction {
+  include: string[];
+  entry_points: EntryPoint[];
+  exclude?: string[];
+  external_dependencies?: ExternalDependency[];
+  build_requirements?: string;
+  notes?: string;
+}
+
+export interface EntryPoint {
+  path: string;
+  symbol?: string;
+  description?: string;
+}
+
+export interface ExternalDependency {
+  name: string;
+  version?: string;
+  purpose?: string;
 }
 
 export interface Provenance {

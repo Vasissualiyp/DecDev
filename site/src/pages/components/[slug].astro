@@ -39,6 +39,12 @@ const { component } = Astro.props;
         padding: 0.75rem 1rem;
         margin-bottom: 0.75rem;
       }
+      .extraction {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px dashed #ccc;
+        font-size: 0.9rem;
+      }
       dt {
         font-weight: bold;
         margin-top: 0.75rem;
@@ -131,6 +137,71 @@ const { component } = Astro.props;
             {" "}
             · <a href={implementation.demo_url} rel="noopener noreferrer">Demo</a>
           </>
+        )}
+        {implementation.extraction && (
+          <div class="extraction">
+            <p>
+              <strong>Selective extraction</strong> — this implementation is pulled from a subset
+              of the repository above, not the whole thing.
+            </p>
+            <dl>
+              <dt>Files to include</dt>
+              <dd>
+                <ul>
+                  {implementation.extraction.include.map((path) => (
+                    <li><code class="inline">{path}</code></li>
+                  ))}
+                </ul>
+              </dd>
+              <dt>Entry points</dt>
+              <dd>
+                <ul>
+                  {implementation.extraction.entry_points.map((entryPoint) => (
+                    <li>
+                      <code class="inline">{entryPoint.path}</code>
+                      {entryPoint.symbol && <> :: <code class="inline">{entryPoint.symbol}</code></>}
+                      {entryPoint.description && <> — {entryPoint.description}</>}
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+              {implementation.extraction.exclude && implementation.extraction.exclude.length > 0 && (
+                <>
+                  <dt>Explicitly excluded</dt>
+                  <dd>{implementation.extraction.exclude.join(", ")}</dd>
+                </>
+              )}
+              {implementation.extraction.external_dependencies &&
+                implementation.extraction.external_dependencies.length > 0 && (
+                  <>
+                    <dt>External dependencies</dt>
+                    <dd>
+                      <ul>
+                        {implementation.extraction.external_dependencies.map((dependency) => (
+                          <li>
+                            {dependency.name}
+                            {dependency.version && <> {dependency.version}</>}
+                            {dependency.purpose && <> — {dependency.purpose}</>}
+                          </li>
+                        ))}
+                      </ul>
+                    </dd>
+                  </>
+                )}
+              {implementation.extraction.build_requirements && (
+                <>
+                  <dt>Build requirements</dt>
+                  <dd>{implementation.extraction.build_requirements}</dd>
+                </>
+              )}
+              {implementation.extraction.notes && (
+                <>
+                  <dt>Notes</dt>
+                  <dd>{implementation.extraction.notes}</dd>
+                </>
+              )}
+            </dl>
+          </div>
         )}
       </div>
     ))}

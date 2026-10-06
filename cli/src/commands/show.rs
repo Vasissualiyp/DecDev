@@ -1,5 +1,5 @@
 use clap::Args;
-use decdev_core::Component;
+use decdev_core::{Component, Extraction};
 
 #[derive(Args)]
 pub struct ShowArgs {
@@ -108,6 +108,9 @@ fn print_human(c: &Component) {
         if let Some(demo_url) = &implementation.demo_url {
             println!("    demo_url: {demo_url}");
         }
+        if let Some(extraction) = &implementation.extraction {
+            print_extraction(extraction);
+        }
     }
 
     println!("license: {}", c.license);
@@ -125,6 +128,55 @@ fn print_human(c: &Component) {
 
     if let Some(version) = &c.version {
         println!("version: {version}");
+    }
+}
+
+fn print_extraction(extraction: &Extraction) {
+    println!("    extraction recipe (selective pull from a larger upstream project):");
+    println!("      include:");
+    for path in &extraction.include {
+        println!("        - {path}");
+    }
+    println!("      entry_points:");
+    for entry_point in &extraction.entry_points {
+        match (&entry_point.symbol, &entry_point.description) {
+            (Some(symbol), Some(description)) => {
+                println!(
+                    "        - {} :: {} ({})",
+                    entry_point.path, symbol, description
+                )
+            }
+            (Some(symbol), None) => println!("        - {} :: {}", entry_point.path, symbol),
+            (None, Some(description)) => {
+                println!("        - {} ({})", entry_point.path, description)
+            }
+            (None, None) => println!("        - {}", entry_point.path),
+        }
+    }
+    if !extraction.exclude.is_empty() {
+        println!("      exclude: {}", extraction.exclude.join(", "));
+    }
+    if !extraction.external_dependencies.is_empty() {
+        println!("      external_dependencies:");
+        for dependency in &extraction.external_dependencies {
+            let version = dependency
+                .version
+                .as_deref()
+                .map(|v| format!(" {v}"))
+                .unwrap_or_default();
+            let purpose = dependency
+                .purpose
+                .as_deref()
+                .map(|p| format!(" — {p}"))
+                .unwrap_or_default();
+            println!("        - {}{}{}", dependency.name, version, purpose);
+        }
+    }
+    if let Some(build_requirements) = &extraction.build_requirements {
+        println!("      build_requirements: {build_requirements}");
+    }
+    if let Some(notes) = &extraction.notes {
+        println!("      notes: {notes}");
     }
 }
 

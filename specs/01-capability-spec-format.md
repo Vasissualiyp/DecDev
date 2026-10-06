@@ -80,7 +80,8 @@ Save as `/schema/component.schema.json`.
           "url": { "type": "string", "format": "uri" },
           "license": { "type": "string" },
           "maturity": { "type": "string", "enum": ["prototype", "usable", "production-tested"] },
-          "demo_url": { "type": "string", "format": "uri" }
+          "demo_url": { "type": "string", "format": "uri" },
+          "extraction": { "$ref": "#/$defs/extraction" }
         }
       }
     },
@@ -132,14 +133,67 @@ Save as `/schema/component.schema.json`.
         "payload": { "type": "string" },
         "description": { "type": "string" }
       }
+    },
+    "extraction": {
+      "type": "object",
+      "required": ["include", "entry_points"],
+      "additionalProperties": false,
+      "description": "Present only when this implementation is a selectively-extracted subset of a larger upstream project, rather than a dedicated repo for this exact capability. Only valid when the component's provenance.derived_from is set and provenance.type is not proprietary_analysis. This describes the smallest useful boundary, not the whole upstream repository.",
+      "properties": {
+        "include": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "File/directory paths or globs, relative to the upstream repo root, that must be pulled — the full resolved set, including transitive internal dependencies within the upstream repo. This is the authoritative set of what to copy."
+        },
+        "entry_points": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["path"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "symbol": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          },
+          "description": "The API surface within `include` that an adapter should call into to satisfy this component's own capability interface (the component's top-level `capability` block IS the standardized interface the adapter targets — there is no separate interface schema to define)."
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Sibling subsystems or paths explicitly NOT needed, named for contributor/reviewer clarity. Not mechanically enforced — `include` is already the authoritative set; this just documents what was deliberately left out and why (pair with `notes`)."
+        },
+        "external_dependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "version": { "type": "string" },
+              "purpose": { "type": "string" }
+            }
+          },
+          "description": "Third-party libraries the extracted code needs that are not themselves part of the upstream repo."
+        },
+        "build_requirements": {
+          "type": "string",
+          "description": "Free-text build/runtime requirements: compiler/language standard, platform, engine version, etc."
+        },
+        "notes": { "type": "string" }
+      }
     }
   }
 }
 ```
 
-Two validation rules are not expressible in plain JSON Schema (both enforced
-in `scripts/lib/load.ts`, see `05-validation-ci.md` — not optional, both are
-covered by required test cases in `specs/07-testing.md`):
+Three validation rules are not expressible in plain JSON Schema (all
+enforced in `crates/core/src/validate.rs`, see `05-validation-ci.md` — not
+optional, all covered by required test cases in `specs/07-testing.md`):
 
 1. If `provenance.type == "proprietary_analysis"`, then
    `provenance.legal_review` must be present and `true`, else the file
@@ -148,6 +202,14 @@ covered by required test cases in `specs/07-testing.md`):
    `provenance.derived_from` must be present (non-empty string), else the
    file fails validation — an "open source derived" component with no
    pointer to what it was derived from is not meaningfully attributed.
+3. If any `implementations[].extraction` is present, then
+   `provenance.derived_from` must be present AND `provenance.type` must
+   NOT be `proprietary_analysis`. Deliberately generic — this does not
+   check for the literal string `open_source_derived`, so any future
+   additional legitimate provenance category that sets `derived_from`
+   automatically supports extraction with no validator changes. See
+   "Selective extraction" below for why this exists and what it does not
+   permit.
 
 ## `implementations[].url` and `demo_url` must be real — no exceptions
 
@@ -165,6 +227,84 @@ link-check step (HEAD-request every `url`/`demo_url` in
 `/components`, fail on anything that doesn't 2xx/3xx — see
 `specs/05-validation-ci.md`), because "please don't invent links" is
 not a control, it's a hope.
+
+## Selective extraction from a larger upstream project
+
+Most implementations are either a dedicated repo for exactly this
+capability, or a whole small repo worth vendoring in full. Sometimes
+neither is true: the only real-world implementation of a capability lives
+inside a much larger project, and vendoring that entire project just to
+get one subsystem is wasteful and makes the dependency unclear. The
+`extraction` field on an `implementations[]` entry (see `$defs/extraction`
+above) describes a recipe for pulling the **smallest useful boundary**
+instead of the whole repository: which files to include (the full
+resolved set, transitive internal dependencies already folded in), the
+entry points an adapter should call into, what's explicitly excluded and
+why, third-party dependencies the extracted code needs, and build
+requirements.
+
+**Hard legal boundary, not a style preference: `extraction` may only
+reference legitimately-licensed sources.** The non-schema rule above
+enforces this mechanically (`provenance.derived_from` required,
+`provenance.type` must not be `proprietary_analysis`), but the rule exists
+*because* of a specific, deliberate design decision: this mechanism must
+never become a way to describe "which files to pull out of a decompiled
+proprietary game." Analyzing an unauthorized decompilation of a current
+commercial title and publishing a precise guide to extracting pieces of it
+is not meaningfully different from redistributing the source itself — it's
+the operationally useful artifact of the same infringement, one layer of
+indirection removed. `extraction` is for permissively-licensed open-source
+projects where cloning the repo and reading the code is already 100%
+legitimate; it never gates on "the user says they're authorized" for
+something that has no realistic authorization path (see `docs/architecture.md`
+section J and the real example below, which was rejected precisely because
+its only named use cases were current commercial AAA titles).
+
+The adapter an agent writes to satisfy the component's `capability`
+interface is still hand-written-with-AI-assistance code, same as any other
+composition work (`docs/architecture.md` section E) — `extraction` makes
+the *scoping* of what to pull tractable, it does not generate the adapter
+and does not automate dependency resolution across multiple components'
+recipes together. That remains explicitly future work.
+
+Agent workflow using this field: search the registry → select a capability
+→ inspect `provenance`/`license` (and confirm `extraction`, if present,
+only names a legitimately-licensed `derived_from`) → read the recipe →
+clone the upstream repo and pull `include` → write an adapter from
+`entry_points` to the component's `capability` block → integrate. DecDev's
+own role stops at describing the recipe — it never clones, fetches,
+executes, or hosts any of the upstream source itself (same principle as
+every other implementation link in the registry, see `docs/architecture.md`
+sections C and I).
+
+### Example: an extraction recipe (`/components/voxel-terrain-generation.yaml`, abridged)
+
+```yaml
+implementations:
+  - engine: other
+    language: Rust
+    url: https://github.com/veloren/veloren
+    license: GPL-3.0-or-later
+    extraction:
+      include:
+        - "world/src/sim/"
+        - "world/src/lib.rs"
+      entry_points:
+        - { path: "world/src/sim/mod.rs", symbol: "WorldSim::generate" }
+      exclude:
+        - "voxygen/"   # renderer — separate concern
+        - "server/"    # networking — separate concern
+      external_dependencies:
+        - { name: noise, purpose: "Procedural noise functions." }
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/veloren/veloren
+```
+
+See the real, full version of this file for the complete recipe —
+every path and symbol in it was verified against the actual public
+repository before being written down, not guessed at (the same standard
+every link in this registry is held to, see above).
 
 ## Example: `/components/quake-strafe-movement.yaml`
 

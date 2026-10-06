@@ -31,7 +31,8 @@ Part of the same validation pass in `crates/core`: `license` (top-level,
 the spec's own license) and every `implementations[].license` must match
 a short allow-list of recognizable SPDX identifiers (start with: `MIT`,
 `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause`, `CC-BY-4.0`, `CC0-1.0`,
-`GPL-3.0`, `LGPL-3.0`). Anything else fails validation with a message
+`GPL-3.0`, `GPL-3.0-or-later`, `LGPL-3.0`, `LGPL-3.0-or-later`). Anything
+else fails validation with a message
 telling the contributor to use an SPDX identifier or open an issue if
 their license genuinely isn't on the list yet — don't silently accept
 arbitrary strings.

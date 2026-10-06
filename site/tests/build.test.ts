@@ -75,6 +75,36 @@ const FIXTURES: Component[] = [
     license: "MIT",
     provenance: { type: "original" },
   },
+  {
+    slug: "test-extraction",
+    name: "Test Extraction Component",
+    category: "procgen",
+    summary: "Fixture for extraction-recipe rendering tests.",
+    reference_games: [],
+    genre_tags: [],
+    capability: {
+      inputs: [],
+      outputs: [],
+      events: [],
+      dependencies: [],
+      invariants: [],
+      determinism: "none",
+    },
+    implementations: [
+      {
+        engine: "other",
+        language: "Rust",
+        url: "https://example.invalid/upstream-repo",
+        license: "MIT",
+        extraction: {
+          include: ["world/src/sim/"],
+          entry_points: [{ path: "world/src/sim/mod.rs", symbol: "WorldSim::generate" }],
+        },
+      },
+    ],
+    license: "MIT",
+    provenance: { type: "open_source_derived", derived_from: "https://example.invalid/upstream-repo" },
+  },
 ];
 
 beforeAll(() => {
@@ -105,6 +135,12 @@ describe("/components/[slug]", () => {
     const html = readDist(path.join("components", "test-movement", "index.html"));
     expect(html).toContain("Test Movement Component");
     expect(html).toContain('href="https://example.invalid/test-movement"');
+  });
+
+  it("renders an extraction recipe's include paths and entry points when present", () => {
+    const html = readDist(path.join("components", "test-extraction", "index.html"));
+    expect(html).toContain("world/src/sim/");
+    expect(html).toContain("WorldSim::generate");
   });
 });
 

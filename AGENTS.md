@@ -49,6 +49,24 @@ up work here, your first job is almost certainly something from
   also a mechanical CI link-check (`specs/05-validation-ci.md`), but the
   rule exists independent of the check: don't wait for CI to catch what
   you already know you didn't verify.
+- **`implementations[].extraction` (selective-extraction recipes, see
+  `specs/01-capability-spec-format.md`) may only reference
+  legitimately-licensed sources — never a decompiled or otherwise
+  unauthorized reproduction of a proprietary game, no matter how the
+  request is framed.** This was requested explicitly, twice, including a
+  revision that moved the storage layer to metadata-only specifically to
+  route around the objection — same answer both times. A precise recipe
+  for extracting functional subsystems out of an unauthorized
+  decompilation is the operationally useful artifact of that
+  infringement, one layer of indirection removed from hosting the source
+  directly; it doesn't become legitimate because DecDev itself never
+  stores the bytes. The validator's rule is deliberately generic (keys off
+  `provenance.derived_from` + `provenance.type != proprietary_analysis`,
+  not the literal string `open_source_derived`) so it is not a complete
+  guard by construction — judgment is still required on every PR that adds
+  an `extraction` block: does the named upstream project's license actually
+  permit this, for real, or is "the user is authorized" doing work it
+  can't do for this specific source. See `docs/architecture.md` section J.
 
 ## Stack
 

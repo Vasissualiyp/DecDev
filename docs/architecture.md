@@ -96,6 +96,15 @@ machine or timed-event sequence per capability — strong enough that two
 implementations of the same v1 spec could be swapped with higher confidence.
 That's a research-grade problem; v0 does not pretend to solve it.
 
+One addition within v0's own descriptive scope: an `implementations[]`
+entry can carry an `extraction` recipe — which files/entry-points/transitive
+dependencies to pull out of a larger upstream project, rather than the
+whole repository — for the case where the only real implementation of a
+capability lives inside a much bigger permissively-licensed codebase. See
+`specs/01-capability-spec-format.md`'s "Selective extraction" section and
+section J below for why this is scoped hard to legitimately-licensed
+sources only.
+
 ## C. Component model
 
 A valid component = one spec file conforming to the v0 schema, with a
@@ -133,6 +142,16 @@ hand-written-with-AI-assistance per pair of implementations, not generated
 automatically from the v0 metadata — v0 doesn't carry enough semantic
 information to generate a correct adapter, only enough to tell a human which
 adapters are worth attempting.
+
+Extraction recipes (section B) make the *scoping* half of this — "which
+files, out of a project with thousands, actually matter" — tractable for
+agents, but don't change this section's conclusion: the recipe's
+`entry_points` tell an agent what to adapt, writing the adapter itself is
+still hand-written-with-AI-assistance work against the target component's
+`capability` interface. Resolving multiple components' recipes together
+(the "Minecraft worldgen + X + Y + Z" composed-request case) — detecting
+conflicts, ordering extraction, merging build requirements — is explicitly
+not attempted; each recipe resolves independently today.
 
 ## F. Agent interface
 
@@ -206,6 +225,25 @@ jurisdiction; this gate exists to force the question to a human rather than
 let CI silently wave it through. **This is not legal advice** — a real
 contributor pipeline handling `proprietary_analysis` entries should involve
 an actual IP lawyer before launch, not just this CI gate.
+
+**On selective extraction specifically** (section B/E): the temptation
+this project has already run into once is "the registry only stores
+*metadata* — which files to pull from a larger project, not the project
+itself — so proprietary sources are fine as extraction targets." They are
+not. A precise, structured guide to extracting the functional subsystems
+of a decompiled, unauthorized reproduction of a current commercial game is
+the operationally useful artifact of that infringement, one layer of
+indirection removed from hosting the bytes directly — it doesn't become
+legitimate because DecDev itself never stores the source. The validation
+rule (`provenance.derived_from` set, `provenance.type` not
+`proprietary_analysis`) is deliberately generic — it doesn't hardcode the
+string `open_source_derived` — specifically so future legitimate
+provenance categories don't require a schema change, but "legitimate" is
+load-bearing: it means a project whose license actually permits cloning,
+reading, and reusing the code, not "the user claims to be authorized" for
+a decompiled AAA title where no realistic authorization exists. If this
+gets relitigated again, the answer is still no for proprietary sources,
+regardless of how the storage layer is framed.
 
 ## K. Business/ecosystem strategy
 

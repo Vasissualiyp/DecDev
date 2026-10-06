@@ -29,11 +29,22 @@ time someone adds a component.
 - `genre_tags` rejects an entry that isn't lowercase-kebab (e.g. `"FPS"`).
 - `capability.determinism` rejects a value outside
   `strict`/`best-effort`/`none`.
-- The non-schema rules (both from `specs/01-capability-spec-format.md`):
+- The non-schema rules (all three from `specs/01-capability-spec-format.md`):
   `provenance.type: proprietary_analysis` with `legal_review` absent or
   `false` fails; the same with `legal_review: true` passes.
   `provenance.type: open_source_derived` with `derived_from` absent or
   empty fails; the same with a non-empty `derived_from` passes.
+  `implementations[].extraction` present with no `provenance.derived_from`
+  fails; present with `provenance.type: proprietary_analysis` fails *even
+  with* `legal_review: true` and a `derived_from` set (this is the hard
+  legal boundary, not a missing-field check — test it explicitly, not just
+  the missing-field case); present with `provenance.type:
+  open_source_derived` and a `derived_from` set passes; present with some
+  *other* non-`proprietary_analysis` provenance type (e.g. `clean_room`)
+  and a `derived_from` set also passes — this last case is the one that
+  actually proves the rule is generic and doesn't key off the literal
+  string `open_source_derived`, don't skip it.
+- `extraction.entry_points` missing (schema-required) fails.
 - License allow-list check: one passing case per allow-listed license, one
   failing case for an arbitrary unrecognized string.
 - `load_and_validate_components()` against a fixture directory containing
@@ -64,7 +75,9 @@ location, or these tests can't use fixtures):
   test against fixtures with one implementation).
 - `show`: known slug prints the full spec; unknown slug exits `1` and
   includes a suggestion for a close typo (test with a one-character-off
-  slug against a fixture set).
+  slug against a fixture set); a fixture component with an
+  `implementations[].extraction` block prints its `include` paths and
+  `entry_points` in the output.
 - `validate`: a fixture with one valid and one invalid file reports both
   correctly, exits `1`; an all-valid fixture set exits `0`.
 - `export`: an all-valid fixture set prints the full JSON array to stdout
@@ -101,6 +114,8 @@ are scoped to rendering only:
   interpolation escapes by default, but this is cheap insurance against a
   future refactor that uses `set:html` or similar and silently reopens an
   XSS hole on community-submitted content.
+- A fixture component whose implementation carries an `extraction` block
+  renders its `include` paths and `entry_points` on the detail page.
 
 ## Coverage expectation
 

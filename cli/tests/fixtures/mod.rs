@@ -55,6 +55,33 @@ provenance:
   type: original
 "#;
 
+/// A component whose implementation carries a selective-extraction
+/// recipe, for testing `show`'s extraction-recipe rendering.
+pub const EXTRACTION_COMPONENT: &str = r#"
+name: Extracted Terrain
+category: procgen
+summary: A procgen component for testing extraction-recipe rendering.
+capability:
+  inputs: []
+  outputs: []
+  events: []
+  dependencies: []
+  determinism: none
+implementations:
+  - engine: other
+    language: Rust
+    url: https://example.invalid/upstream-repo
+    license: MIT
+    extraction:
+      include: ["world/src/sim/"]
+      entry_points:
+        - { path: "world/src/sim/mod.rs", symbol: "WorldSim::generate" }
+license: MIT
+provenance:
+  type: open_source_derived
+  derived_from: https://example.invalid/upstream-repo
+"#;
+
 pub const INVALID_MISSING_CATEGORY: &str = r#"
 name: Invalid Component
 summary: Missing the required category field.

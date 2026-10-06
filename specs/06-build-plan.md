@@ -82,7 +82,26 @@ No website, no full CLI, no CI yet beyond the scaffolding above.
    file.
 9. Grow seed set to 30–50 components across all `category` values, at least
    3 different `implementations[].engine` values represented. **Done when**:
-   every category filter on `/` returns at least one result.
+   every category filter on `/` returns at least one result. (As of the
+   extraction-recipe work below, the seed set is at 12 — this task is not
+   yet done.)
+10. Add selective-extraction recipes (`implementations[].extraction`) per
+    `specs/01-capability-spec-format.md`'s "Selective extraction" section
+    — schema + the generic non-schema rule (`derived_from` set,
+    `provenance.type != proprietary_analysis`) + `show`'s recipe rendering
+    + the site's detail-page rendering. **Done when** (all delivered):
+    schema/model/validator updated with tests covering both the
+    missing-derived_from and proprietary_analysis-is-blocked-even-with-
+    legal_review cases *and* the generic-non-open_source_derived-still-
+    passes case; `decdev show` prints a present recipe's `include`/
+    `entry_points`; the component detail page renders the same; one real
+    seed component (`voxel-terrain-generation.yaml`, extracted from
+    Veloren, GPL-3.0-or-later, every path/symbol verified against the
+    real upstream repo) proves the whole path end-to-end. Explicitly not
+    delivered, and not planned for MVP/alpha: automated fetching/
+    extraction of the upstream source, adapter generation, or resolving
+    multiple components' recipes together — see `docs/architecture.md`
+    sections B/E.
 
 ## Tier 3 — 1–3 month alpha
 
