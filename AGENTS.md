@@ -112,9 +112,18 @@ add one there in the same PR rather than leaving the list stale.
 
 ## Commands
 
-Not yet applicable — no buildable code exists yet. Once `crates/core`,
-`cli/`, and `site/` exist (`specs/06-build-plan.md` Tiers 1–2), this
-section should be updated with the actual commands (`cargo build`,
-`cargo test --workspace`, `cargo run -p cli -- <command>`,
-`npm run build --prefix site`, etc.), so a future agent doesn't have to
-rediscover them.
+`cargo`/`rustc` are not on the default `PATH` on this machine — prefix every
+cargo invocation with `nix develop --command` (the repo's `flake.nix`
+provides a working Rust toolchain). The package name for the CLI crate is
+`decdev` (not `cli` — that's just the directory name), so use `-p decdev`.
+
+- `nix develop --command cargo build --workspace`
+- `nix develop --command cargo test --workspace`
+- `nix develop --command cargo clippy --workspace --all-targets -- -D warnings`
+- `nix develop --command cargo fmt` (and `--check` to verify without changing)
+- `nix develop --command cargo run -p decdev -- export` — currently the
+  only subcommand implemented; `list`/`search`/`show`/`validate` are Tier 2
+  (`specs/06-build-plan.md` task 5), not yet built.
+
+`site/` doesn't exist yet (Tier 2, `specs/06-build-plan.md` task 6) — once
+it does, add its `npm run build --prefix site` command here too.
