@@ -1,0 +1,42 @@
+name: Dungeon Room Procgen
+category: procgen
+summary: Room-and-corridor dungeon generator with seeded layout and connectivity guarantee.
+description: >
+  Places non-overlapping rooms inside a bounded grid, connects them with a
+  minimum spanning tree plus a few extra loops, and carves corridors between
+  connected rooms. Given the same seed, output is identical.
+reference_games:
+  - The Binding of Isaac
+  - Enter the Gungeon
+genre_tags: [roguelike, dungeon-crawler]
+capability:
+  inputs:
+    - { name: seed, type: uint64 }
+    - { name: room_count, type: int }
+    - { name: grid_size, type: vector2int }
+  outputs:
+    - { name: level_grid, type: TileGrid }
+    - { name: room_list, type: RectList }
+  events:
+    - { name: LevelGenerated }
+  dependencies: [SeededRng]
+  invariants:
+    - "All rooms are reachable from the spawn room."
+    - "No two rooms overlap."
+  determinism: strict
+implementations:
+  - engine: engine-agnostic
+    language: Rust
+    url: https://github.com/example/room-dungeon-procgen
+    license: MIT
+    maturity: production-tested
+  - engine: Unity
+    language: C#
+    url: https://github.com/example/unity-room-dungeon
+    license: MIT
+    maturity: usable
+license: CC-BY-4.0
+provenance:
+  type: original
+  notes: Standard BSP/MST room-gen approach described in public roguelike talks.
+version: 0.1.0

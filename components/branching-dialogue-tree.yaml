@@ -1,0 +1,37 @@
+name: Branching Dialogue Tree
+category: dialogue
+summary: Node-graph dialogue with conditions, choices, and persistent flags.
+description: >
+  Conversations are directed graphs of nodes. Each choice can carry a condition
+  predicate over world flags, and taking a choice can set or clear flags. Nodes
+  can declare their own entry actions and terminal outcomes.
+reference_games:
+  - Disco Elysium
+  - The Witcher 3
+genre_tags: [rpg, narrative]
+capability:
+  inputs:
+    - { name: start_conversation, type: ConversationId }
+    - { name: choose_option, type: int }
+  outputs:
+    - { name: current_node, type: DialogueNode }
+  events:
+    - { name: ConversationStarted }
+    - { name: NodeEntered }
+    - { name: ConversationEnded }
+  dependencies: [FlagStore, Localization]
+  invariants:
+    - "At every node at least one option is available, or the node is terminal."
+    - "Options whose conditions fail are never presented."
+  determinism: strict
+implementations:
+  - engine: Unreal
+    language: C++
+    url: https://github.com/example/unreal-dialogue-graph
+    license: MIT
+    maturity: prototype
+license: CC-BY-4.0
+provenance:
+  type: clean_room
+  notes: Implemented from the public description of dialogue-graph editors; no proprietary editor code used.
+version: 0.1.0

@@ -1,0 +1,38 @@
+name: Quake-style Strafe Movement
+category: movement
+summary: Air-strafing bunny-hop movement with ground friction and acceleration caps.
+description: >
+  First-person movement controller modeled on Quake-engine air control:
+  separate ground/air acceleration curves, speed gained through strafe-jump
+  timing, and a friction model applied only while grounded.
+reference_games:
+  - Quake
+  - Quake III Arena
+genre_tags: [fps, arena-shooter]
+capability:
+  inputs:
+    - { name: move_input, type: vector2, description: "Forward/strafe axes, -1..1" }
+    - { name: jump_pressed, type: bool }
+    - { name: grounded, type: bool }
+  outputs:
+    - { name: velocity, type: vector3, unit: "units/s" }
+  events:
+    - { name: Jumped }
+    - { name: Landed }
+    - { name: StartedFalling }
+  dependencies: [PhysicsBody, Input]
+  invariants:
+    - "Friction is applied only while grounded."
+    - "Air acceleration is capped independently of ground acceleration."
+  determinism: best-effort
+implementations:
+  - engine: engine-agnostic
+    language: C#
+    url: https://github.com/example/quake-movement-csharp
+    license: MIT
+    maturity: usable
+license: CC-BY-4.0
+provenance:
+  type: original
+  notes: Written from publicly documented Quake movement-physics writeups, no engine source referenced.
+version: 0.1.0

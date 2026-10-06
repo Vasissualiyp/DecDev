@@ -1,0 +1,38 @@
+name: Hitscan Weapon
+category: combat
+summary: Instant-hit weapon with spread cone, falloff, and fire-rate gating.
+description: >
+  Fires a ray from the muzzle each time the trigger passes the fire-rate gate,
+  applies damage by distance falloff, and spawns impact effects at the hit
+  point. Spread widens while moving and recovers while stationary.
+reference_games:
+  - Doom
+  - Half-Life
+genre_tags: [fps, shooter]
+capability:
+  inputs:
+    - { name: trigger_pressed, type: bool }
+    - { name: muzzle_transform, type: transform }
+    - { name: movement_speed, type: float, unit: "m/s" }
+  outputs:
+    - { name: shots_fired, type: int }
+  events:
+    - { name: Fired }
+    - { name: Hit }
+    - { name: Missed }
+  dependencies: [Input, PhysicsRaycast, Damageable]
+  invariants:
+    - "No more than fire_rate shots are emitted per second."
+    - "Damage is monotonically non-increasing with distance."
+  determinism: best-effort
+implementations:
+  - engine: Godot
+    language: GDScript
+    url: https://github.com/example/godot-hitscan-weapon
+    license: MIT
+    maturity: usable
+license: CC-BY-4.0
+provenance:
+  type: original
+  notes: Generic hitscan pattern; no engine source referenced.
+version: 0.1.0

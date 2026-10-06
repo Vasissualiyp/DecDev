@@ -1,0 +1,37 @@
+name: Verlet Rope Simulation
+category: physics
+summary: Position-based rope/chain with distance constraints and anchor points.
+description: >
+  A rope is a list of point masses integrated with Verlet motion, constrained
+  by distance links and optionally world collision. The first point can be
+  pinned as an anchor; subsequent solver iterations reduce stretch.
+reference_games:
+  - Shadow of the Colossus
+  - Just Cause
+genre_tags: [action-adventure, physics]
+capability:
+  inputs:
+    - { name: anchor_transform, type: transform }
+    - { name: segment_count, type: int }
+    - { name: dt, type: float, unit: "s" }
+  outputs:
+    - { name: point_positions, type: Vector3List }
+  events:
+    - { name: RopeStretched }
+    - { name: AnchorReleased }
+  dependencies: [PhysicsWorld]
+  invariants:
+    - "Constraint length error after solving is below the configured tolerance."
+    - "The pinned point never moves except via its anchor."
+  determinism: best-effort
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/example/verlet-rope
+    license: MIT
+    maturity: usable
+license: CC-BY-4.0
+provenance:
+  type: clean_room
+  notes: Position-based dynamics rope written from the public Verlet integration paper.
+version: 0.1.0

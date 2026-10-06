@@ -1,0 +1,37 @@
+name: Quest Log Tracker
+category: quest
+summary: Objective graph with prerequisite chains, counters, and completion states.
+description: >
+  Quests are made of objectives that become active when their prerequisites are
+  satisfied. Objectives can be single events, counters, or composite
+  (all-of/any-of) nodes. Completion propagates transitively to unlock dependents.
+reference_games:
+  - Skyrim
+  - The Witcher 3
+genre_tags: [rpg, open-world]
+capability:
+  inputs:
+    - { name: start_quest, type: QuestId }
+    - { name: objective_progress, type: ObjectiveEvent }
+  outputs:
+    - { name: quest_state, type: QuestState }
+  events:
+    - { name: ObjectiveActivated }
+    - { name: ObjectiveCompleted }
+    - { name: QuestCompleted }
+  dependencies: [FlagStore]
+  invariants:
+    - "An objective is never active before all its prerequisites complete."
+    - "QuestCompleted fires exactly once per quest."
+  determinism: strict
+implementations:
+  - engine: Godot
+    language: C#
+    url: https://github.com/example/godot-quest-log
+    license: MIT
+    maturity: usable
+license: CC-BY-4.0
+provenance:
+  type: original
+  notes: Objective-graph pattern written from common quest-system design writeups.
+version: 0.1.0

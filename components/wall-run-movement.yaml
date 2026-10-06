@@ -1,0 +1,44 @@
+name: Wall-Run Movement
+category: character-controller
+summary: Wall-running and wall-jumping for first-person and third-person controllers.
+description: >
+  Detects walls on either side of the character, enters a wall-run state that
+  locks gravity and applies forward momentum along the wall plane, and allows
+  wall-jumps that project velocity away from the surface.
+reference_games:
+  - Titanfall 2
+  - Mirror's Edge
+genre_tags: [fps, parkour]
+capability:
+  inputs:
+    - { name: move_input, type: vector2 }
+    - { name: jump_pressed, type: bool }
+    - { name: wall_normal, type: vector3 }
+  outputs:
+    - { name: velocity, type: vector3 }
+    - { name: is_wall_running, type: bool }
+  events:
+    - { name: WallRunStarted }
+    - { name: WallRunEnded }
+    - { name: WallJumped }
+  dependencies: [PhysicsBody, Input, GroundCheck]
+  invariants:
+    - "Gravity is not applied while wall-running."
+    - "A wall-run ends after its configured maximum duration."
+  determinism: best-effort
+implementations:
+  - engine: Unreal
+    language: C++
+    url: https://github.com/example/unreal-wallrun
+    license: MIT
+    maturity: usable
+  - engine: Unity
+    language: C#
+    url: https://github.com/example/unity-wallrun
+    license: MIT
+    maturity: prototype
+license: CC-BY-4.0
+provenance:
+  type: original
+  notes: Movement pattern written from public parkour-controller breakdowns.
+version: 0.1.0

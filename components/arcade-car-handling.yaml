@@ -1,0 +1,38 @@
+name: Arcade Car Handling
+category: vehicle
+summary: Grip-limited arcade driving with handbrake drift and speed-dependent steering.
+description: >
+  Wheel forces are derived from a simplified tire model: lateral grip is capped,
+  exceeding it induces slide, and the handbrake drops rear grip to force a
+  drift. Steering authority scales down as speed rises.
+reference_games:
+  - Mario Kart
+  - Need for Speed
+genre_tags: [racing, arcade]
+capability:
+  inputs:
+    - { name: throttle, type: float, description: "-1..1" }
+    - { name: steer, type: float, description: "-1..1" }
+    - { name: handbrake, type: bool }
+  outputs:
+    - { name: body_transform, type: transform }
+    - { name: wheel_slip, type: float }
+  events:
+    - { name: DriftStarted }
+    - { name: DriftEnded }
+  dependencies: [PhysicsBody, Input]
+  invariants:
+    - "Lateral force never exceeds the configured grip limit."
+    - "DriftStarted fires only after rear slip exceeds a threshold."
+  determinism: best-effort
+implementations:
+  - engine: Unity
+    language: C#
+    url: https://github.com/example/unity-arcade-car
+    license: MIT
+    maturity: usable
+license: CC-BY-4.0
+provenance:
+  type: original
+  notes: Arcade tire model derived from publicly described grip-cap approaches.
+version: 0.1.0

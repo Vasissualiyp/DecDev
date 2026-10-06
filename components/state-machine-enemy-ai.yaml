@@ -1,0 +1,44 @@
+name: State Machine Enemy AI
+category: enemy-ai
+summary: Hierarchical state machine with perception-driven transitions and patrol routes.
+description: >
+  Enemies run a state machine (patrol, investigate, chase, attack, flee) whose
+  transitions are gated by a perception system exposing last-known-target
+  position and visibility. States can own nested sub-machines.
+reference_games:
+  - Halo
+  - F.E.A.R.
+genre_tags: [fps, stealth]
+capability:
+  inputs:
+    - { name: perception_target, type: TargetSnapshot }
+    - { name: nav_path, type: Path }
+    - { name: self_state, type: ActorState }
+  outputs:
+    - { name: desired_move, type: vector3 }
+    - { name: current_state, type: StateId }
+  events:
+    - { name: StateChanged }
+    - { name: TargetLost }
+    - { name: TargetAcquired }
+  dependencies: [NavMesh, Perception, PhysicsBody]
+  invariants:
+    - "Attack state is unreachable while the target is not visible."
+    - "A transition only fires when its guard predicate is true."
+  determinism: none
+implementations:
+  - engine: Unreal
+    language: C++
+    url: https://github.com/example/unreal-fsm-ai
+    license: MIT
+    maturity: production-tested
+  - engine: Godot
+    language: GDScript
+    url: https://github.com/example/godot-fsm-ai
+    license: MIT
+    maturity: prototype
+license: CC-BY-4.0
+provenance:
+  type: original
+  notes: Hierarchical FSM pattern from public AI-for-games literature.
+version: 0.1.0

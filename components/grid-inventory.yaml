@@ -1,0 +1,38 @@
+name: Grid Inventory
+category: inventory
+summary: Fixed-grid inventory with item footprints, rotation, and stack merging.
+description: >
+  Items occupy rectangular cells in a w x h grid. Placement checks for overlap,
+  supports rotating items 90 degrees, and merges stacks when two compatible
+  stacks meet. Emits change events so UI can react.
+reference_games:
+  - Resident Evil 4
+  - Escape from Tarkov
+genre_tags: [survival, rpg]
+capability:
+  inputs:
+    - { name: place_item, type: ItemPlacement }
+    - { name: move_item, type: ItemMove }
+    - { name: rotate_item, type: ItemId }
+  outputs:
+    - { name: grid_state, type: GridState }
+  events:
+    - { name: ItemPlaced }
+    - { name: ItemRemoved }
+    - { name: StackMerged }
+  dependencies: []
+  invariants:
+    - "No two items occupy the same cell."
+    - "Every stored item is fully inside the grid bounds."
+  determinism: strict
+implementations:
+  - engine: engine-agnostic
+    language: TypeScript
+    url: https://github.com/example/ts-grid-inventory
+    license: MIT
+    maturity: usable
+license: CC-BY-4.0
+provenance:
+  type: original
+  notes: Grid inventory modeled from publicly documented tarkov-like layouts.
+version: 0.1.0

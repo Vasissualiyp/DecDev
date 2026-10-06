@@ -1,0 +1,38 @@
+name: Third-person Orbit Camera
+category: camera
+summary: Spring-damped orbit camera with collision-aware boom arm and mouse look.
+description: >
+  Camera that orbits a target point, driven by yaw/pitch input. A spring damper
+  smooths position and rotation, and the boom arm shortens when geometry would
+  otherwise occlude the target.
+reference_games:
+  - Dark Souls
+  - The Legend of Zelda Breath of the Wild
+genre_tags: [action-adventure, third-person]
+capability:
+  inputs:
+    - { name: look_delta, type: vector2, description: "Mouse/stick delta per frame" }
+    - { name: target_transform, type: transform }
+    - { name: zoom_input, type: float, unit: "notches" }
+  outputs:
+    - { name: camera_transform, type: transform }
+    - { name: boom_length, type: float, unit: "m" }
+  events:
+    - { name: CameraCollisionStarted }
+    - { name: CameraCollisionEnded }
+  dependencies: [Input, PhysicsRaycast]
+  invariants:
+    - "Camera never ends up inside level geometry."
+    - "Target is always within the frame at the configured minimum boom length."
+  determinism: none
+implementations:
+  - engine: Unity
+    language: C#
+    url: https://github.com/example/unity-orbit-camera
+    license: MIT
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: original
+  notes: Common third-person camera pattern described from public GDC talks and tutorials.
+version: 0.1.0
