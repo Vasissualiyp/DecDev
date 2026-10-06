@@ -121,9 +121,9 @@ provides a working Rust toolchain). The package name for the CLI crate is
 - `nix develop --command cargo test --workspace`
 - `nix develop --command cargo clippy --workspace --all-targets -- -D warnings`
 - `nix develop --command cargo fmt` (and `--check` to verify without changing)
-- `nix develop --command cargo run -p decdev -- export` — currently the
-  only subcommand implemented; `list`/`search`/`show`/`validate` are Tier 2
-  (`specs/06-build-plan.md` task 5), not yet built.
+- `nix develop --command cargo run -p decdev -- <list|search|show|validate|export>`
+  — all five subcommands are implemented (`specs/06-build-plan.md` Tiers 1–2
+  tasks 1-5 are done); see `specs/04-cli.md` for exact flags per command.
 
 `site/` doesn't exist yet (Tier 2, `specs/06-build-plan.md` task 6) — once
 it does, add its `npm run build --prefix site` command here too.
