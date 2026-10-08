@@ -1,40 +1,12 @@
 use std::path::PathBuf;
 
-/// Finds the `components` directory by walking up from the current working
-/// directory, checking up to 10 parent levels. Shared by every command that
-/// operates on the whole catalog (list/search/show/validate/export) so a
-/// contributor can run `decdev <command>` from anywhere inside the repo.
-pub fn find_components_dir() -> Option<PathBuf> {
-    let mut dir = std::env::current_dir().ok()?;
-    for _ in 0..10 {
-        let candidate = dir.join("components");
-        if candidate.is_dir() {
-            return Some(candidate);
-        }
-        if !dir.pop() {
-            break;
-        }
-    }
-    None
-}
-
 /// Builds the ordered list of component source directories for a command:
 /// the discovered `components/` directory (if any) followed by any explicit
-/// `--source` extras. Returns an error only when there is nothing to read.
-/// Shared by every command so `--source` behaves identically everywhere.
+/// `--source` extras. Thin re-export of `decdev_core::resolve_sources` so the
+/// CLI and the API discover the catalog identically (see
+/// `crates/core/src/source.rs`).
 pub fn resolve_sources(extra: &[PathBuf]) -> Result<Vec<PathBuf>, String> {
-    let mut sources = Vec::new();
-    if let Some(dir) = find_components_dir() {
-        sources.push(dir);
-    }
-    sources.extend(extra.iter().cloned());
-    if sources.is_empty() {
-        return Err(
-            "could not find a 'components' directory in the current directory or any parent, and no --source was given"
-                .to_string(),
-        );
-    }
-    Ok(sources)
+    decdev_core::resolve_sources(extra)
 }
 
 /// Prints a component list either as tab-separated rows (`slug\tname\tcategory`)

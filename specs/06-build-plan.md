@@ -122,17 +122,20 @@ No website, no full CLI, no CI yet beyond the scaffolding above.
 
 ## Tier 3 — 1–3 month alpha
 
-10. Read-only REST API: a new Rust binary crate (`api/`, joins the Cargo
-    workspace — this is infra, same rule as the CLI, not a job for
-    Node/TS) using `axum`, thin wrapper over
-    `decdev_core::validate::load_and_validate_components()`, exposing
-    `GET /components`, `GET /components/:slug`, `GET /search?q=`. **Done
-    when**: it returns the same data the CLI and site already compute,
-    just over HTTP, with no new data source, *and* each endpoint has a
-    `cargo test` (via `axum`'s test utilities or an `assert_cmd`/HTTP-
-    client-against-a-spawned-server test) covering a found case, a
-    not-found case (404 for an unknown slug), and a query-param-filtered
-    case for `/search`.
+10. Read-only REST API: a new Rust binary crate (`api/`, package
+    `decdev-api`, joins the Cargo workspace — this is infra, same rule as
+    the CLI, not a job for Node/TS) using `axum`, a thin wrapper over
+    `decdev_core` (`load_and_validate_sources` + shared `matches_query`),
+    exposing `GET /components`, `GET /components/{slug}`,
+    `GET /search?q=` — full spec in `specs/08-api.md`. **Done when**: it
+    returns the same data the CLI and site already compute, just over
+    HTTP, with no new data source, *and* each endpoint has a `cargo test`
+    (via `axum`'s router + `tower`'s `oneshot`, no socket) covering a found
+    case, a not-found case (404 for an unknown slug), and a query-param-
+    filtered case for `/search`. **Done**: `api/` crate added (strict
+    load-on-startup like `export`, in-memory immutable catalog, no DB);
+    6 router tests in `api/tests/api.rs`; end-to-end smoke-tested against
+    the real 30-component catalog (200/404/400 all correct).
 11. MCP server wrapping the same three operations as MCP tools (`search`,
     `show`, `list` — matching the CLI's command names and arguments so an
     agent using either surface learns one vocabulary). Also Rust, also a

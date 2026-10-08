@@ -1,7 +1,7 @@
 # Testing spec
 
-Every crate/package in this repo (`crates/core`, `cli/`, `site/`, and the
-alpha-tier `api`/MCP server when they exist) ships with tests. No task in
+Every crate/package in this repo (`crates/core`, `cli/`, `api/`, `site/`,
+and the alpha-tier MCP server when it exists) ships with tests. No task in
 `specs/06-build-plan.md` is done when it merely "works when I tried it by
 hand" — it's done when its behavior is pinned down by a test that fails if
 the behavior regresses. "Extensively tested" below is deliberately
@@ -98,6 +98,21 @@ at fixtures), and/or an external fixture directory passed via `--source`:
   discoverable from the cwd; a slug duplicated between the discovered
   `components/` and a `--source` makes `validate` fail and makes `export`
   all-or-nothing (nothing on stdout, exit `1`).
+
+## `api/` (read-only REST API)
+
+Tests in `api/tests/` drive the router directly with
+`tower::ServiceExt::oneshot` (no socket, no spawned server) against fixture
+components loaded through `decdev_core`. Every endpoint and error path in
+`specs/08-api.md` gets a case:
+
+- `GET /components` returns every fixture component as a JSON array.
+- `GET /components/{slug}` returns the component for a known slug.
+- `GET /components/{slug}` returns `404` with `{"error": ...}` for an
+  unknown slug.
+- `GET /search?q=` returns only the components matching the query.
+- `GET /search?q=` with no match returns `200` and `[]` (not an error).
+- `GET /search` with no `q` returns `400`.
 
 ## `site/`
 

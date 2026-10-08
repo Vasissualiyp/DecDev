@@ -1,0 +1,24 @@
+[package]
+name = "decdev-api"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "decdev-api"
+path = "src/main.rs"
+
+[lib]
+name = "decdev_api"
+path = "src/lib.rs"
+
+[dependencies]
+decdev-core = { path = "../crates/core" }
+axum = "0.8"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+tempfile = "3"

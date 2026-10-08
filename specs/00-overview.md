@@ -27,12 +27,12 @@ There are two implementation languages in this repo, split by what the code
 *is*, not by convenience:
 
 - **CLI and infra: Rust.** The shared schema-validation/loading library
-  (`crates/core`) and the CLI (`cli/`) are Rust, compiled to native
-  binaries. This is deliberate, not a default: the CLI is meant to be a
-  tool people install and run the way they'd install `ripgrep` or `fd` —
-  a single binary, no runtime dependency — not an npm package requiring a
-  Node install. Any future backend (the alpha-tier REST API / MCP server
-  in `specs/06-build-plan.md` Tier 3) is also Rust, for the same reason:
+  (`crates/core`), the CLI (`cli/`) and the alpha-tier REST API (`api/`)
+  are Rust, compiled to native binaries. This is deliberate, not a
+  default: the CLI is meant to be a tool people install and run the way
+  they'd install `ripgrep` or `fd` — a single binary, no runtime
+  dependency — not an npm package requiring a Node install. The MCP server
+  (`specs/06-build-plan.md` Tier 3) is also Rust, for the same reason:
   it's infra, not presentation.
 - **Website: TypeScript/JavaScript is fine, and expected.** `site/` is
   ordinary web tooling (Astro, Pagefind) — that's normal territory for
@@ -51,7 +51,7 @@ means `site/`'s tests don't need to cover validation at all (see
 Concretely:
 
 - **Workspace (Rust side)**: a Cargo workspace — root `Cargo.toml` with
-  `members = ["crates/core", "cli"]`. See `specs/02-repo-layout.md`.
+  `members = ["crates/core", "cli", "api"]`. See `specs/02-repo-layout.md`.
 - **Schema validation**: JSON Schema (draft 2020-12), checked with the
   `jsonschema` crate; component files are YAML, parsed with `serde_yaml`
   into `serde`-derived structs. Lives in `crates/core`, the only place

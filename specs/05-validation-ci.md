@@ -21,9 +21,19 @@ Public API (`src/validate.rs`):
 - `ValidationError { file: PathBuf, message: String }` where `message` is
   a human-readable JSON Schema error path + reason (the `jsonschema`
   crate's error type formats this directly).
+- `pub fn load_and_validate_sources(sources: &[PathBuf]) -> (Vec<Component>, Vec<ValidationError>)`
+  — the multi-source form behind the CLI's and API's `--source`: loads and
+  validates every source dir in order, merges the results, and treats a
+  duplicate slug across sources as a hard error rather than a silent
+  override. `load_and_validate_components(dir)` delegates to it.
+- `pub fn find_components_dir()` / `resolve_sources(extra)` (in
+  `src/source.rs`) — the shared discovery helpers so the CLI and API pick
+  up the same catalog. `Component::matches_query` (in `src/model.rs`) is
+  the one definition of search matching, shared by `decdev search` and the
+  API's `/search` (`specs/08-api.md`).
 
-Do not duplicate this logic anywhere else — `cli/`'s commands all go
-through this one function.
+Do not duplicate this logic anywhere else — `cli/`'s commands and `api/`'s
+handlers all go through these shared functions.
 
 ## License allow-list check
 

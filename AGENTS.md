@@ -74,8 +74,9 @@ Two languages, split by what the code *is*, not by convenience — full
 rationale in [`specs/00-overview.md`](specs/00-overview.md):
 
 - **CLI and infra: Rust.** The shared schema-validation library
-  (`crates/core`), the CLI (`cli/`), and any future backend (REST API,
-  MCP server) are Rust, compiled to native binaries, one Cargo workspace.
+  (`crates/core`), the CLI (`cli/`), and the backend (the read-only REST
+  API in `api/`; an MCP server later) are Rust, compiled to native
+  binaries, one Cargo workspace (`members = ["crates/core", "cli", "api"]`).
   No Node/TypeScript here, ever — the CLI is meant to be installed like
   `ripgrep` or `fd`, not like an npm package.
   - **If an agent proposes Node/TypeScript/Python for the CLI, the shared
@@ -142,6 +143,11 @@ provides a working Rust toolchain). The package name for the CLI crate is
 - `nix develop --command cargo run -p decdev -- <list|search|show|validate|export>`
   — all five subcommands are implemented (`specs/06-build-plan.md` Tiers 1–2
   tasks 1-5 are done); see `specs/04-cli.md` for exact flags per command.
-
-`site/` doesn't exist yet (Tier 2, `specs/06-build-plan.md` task 6) — once
-it does, add its `npm run build --prefix site` command here too.
+  Every command accepts a repeatable global `--source <DIR>` (extra component
+  directories).
+- `nix develop --command cargo run -p decdev-api -- --port 8080` — the
+  read-only REST API (`specs/08-api.md`); same `--source` semantics as the
+  CLI, strict load-on-startup.
+- `nix develop --command npm test --prefix site` / `npm run build --prefix site`
+  — the `site/` package's tests and build (the build's `prebuild` step runs
+  `decdev export` from `PATH`, so build the Rust side first).

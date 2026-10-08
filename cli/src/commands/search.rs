@@ -35,7 +35,7 @@ pub fn run(args: SearchArgs, extra_sources: &[PathBuf]) -> i32 {
 
     let results: Vec<Component> = valid
         .into_iter()
-        .filter(|c| matches_query(c, &query))
+        .filter(|c| c.matches_query(&query))
         .filter(|c| args.category.as_deref().is_none_or(|cat| c.category == cat))
         .filter(|c| {
             args.engine
@@ -50,16 +50,4 @@ pub fn run(args: SearchArgs, extra_sources: &[PathBuf]) -> i32 {
         .collect();
 
     crate::common::print_rows(&results, args.json)
-}
-
-fn matches_query(c: &Component, query: &str) -> bool {
-    c.name.to_lowercase().contains(query)
-        || c.summary.to_lowercase().contains(query)
-        || c.description
-            .as_deref()
-            .map(|d| d.to_lowercase().contains(query))
-            .unwrap_or(false)
-        || c.reference_games
-            .iter()
-            .any(|g| g.to_lowercase().contains(query))
 }

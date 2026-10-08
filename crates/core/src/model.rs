@@ -125,3 +125,22 @@ pub struct Provenance {
     #[serde(default)]
     pub legal_review: Option<bool>,
 }
+
+impl Component {
+    /// The one definition of "does this component match a search query",
+    /// shared by `decdev search` and the REST API's `/search` so the two
+    /// surfaces can't drift. `query` is expected already lower-cased.
+    pub fn matches_query(&self, query: &str) -> bool {
+        self.name.to_lowercase().contains(query)
+            || self.summary.to_lowercase().contains(query)
+            || self
+                .description
+                .as_deref()
+                .map(|d| d.to_lowercase().contains(query))
+                .unwrap_or(false)
+            || self
+                .reference_games
+                .iter()
+                .any(|g| g.to_lowercase().contains(query))
+    }
+}
