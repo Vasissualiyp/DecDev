@@ -1,0 +1,81 @@
+name: Faceted Voxel World Generation
+category: procgen
+summary: Facet-provider world generation for voxel worlds, selectively extracted from an Apache-licensed Java engine rather than vendored whole.
+description: >
+  Generates the contents of a voxel world by composing independent facet
+  providers (height, biome, surface, structures) and world rasterizers into
+  a single buildable World, per world seed and world-generator URI. This
+  component demonstrates DecDev's selective-extraction recipe against a
+  permissively-licensed engine: it pulls the world-generation module out of
+  a much larger game engine codebase instead of vendoring the engine.
+reference_games:
+  - Minecraft
+  - Infiniminer
+  - Veloren
+genre_tags: [sandbox, voxel, open-world]
+capability:
+  inputs:
+    - { name: seed, type: string }
+    - { name: world_generator_uri, type: string }
+    - { name: chunk_position, type: vector3int }
+  outputs:
+    - { name: chunk_data, type: Chunk }
+    - { name: facet_values, type: World }
+  events:
+    - { name: ChunkGenerated }
+    - { name: WorldGenerated }
+  dependencies: [SeededRng, EntitySystem, ModuleRegistry]
+  invariants:
+    - "A facet's value is fully determined by its providers and the world seed."
+    - "Providers are added in dependency order, so a facet is computed after everything it requires."
+  determinism: best-effort
+implementations:
+  - engine: other
+    language: Java
+    url: https://github.com/MovingBlocks/Terasology
+    license: Apache-2.0
+    maturity: production-tested
+    extraction:
+      include:
+        - "engine/src/main/java/org/terasology/engine/world/generation/"
+        - "engine/src/main/java/org/terasology/engine/world/generator/"
+      entry_points:
+        - { path: "engine/src/main/java/org/terasology/engine/world/generation/WorldBuilder.java", symbol: "WorldBuilder::build", description: "Resolves each facet's provider chain in dependency order and produces the final World. Pair with addProvider/addRasterizer to register the facet providers and rasterizers." }
+        - { path: "engine/src/main/java/org/terasology/engine/world/generation/BaseFacetedWorldGenerator.java", symbol: "BaseFacetedWorldGenerator", description: "Abstract ScalableWorldGenerator that owns the world seed and hands the built World to chunk generation." }
+      exclude:
+        - "engine/src/main/java/org/terasology/engine/rendering/"
+        - "engine/src/main/java/org/terasology/engine/network/"
+        - "engine/src/main/java/org/terasology/engine/audio/"
+        - "engine/src/main/java/org/terasology/engine/input/"
+        - "modules/"
+        - "subsystems/"
+        - "openvr_natives/"
+        - "docs/"
+      external_dependencies:
+        - { name: TeraMath, purpose: "Terasology's vector/matrix math library (org.terasology.math), referenced directly by the generation package." }
+      build_requirements: >
+        Java (OpenJDK/Temurin) with the upstream Gradle wrapper
+        (./gradlew); the generation module also needs the Gestalt
+        module/entity-system libraries that the repository bundles as
+        in-repo subprojects under libs/. Runs on Terasology's own custom
+        Java engine, not Unity/Unreal/Godot — hence engine: other above.
+      notes: >
+        Verified directly against the real repository (GitHub contents API
+        + raw file fetch, 2026-10-08) on the develop branch: the package
+        path is engine/src/main/java/org/terasology/engine/world/generation/
+        (not .../org/terasology/world/), WorldBuilder exists with real
+        public addProvider/addRasterizer/build methods, and
+        BaseFacetedWorldGenerator implements ScalableWorldGenerator. The
+        include list is a first-pass module boundary, not a fully resolved
+        dependency graph; the generation code imports Gestalt module and
+        entity-system types from elsewhere in the same repo, so verify the
+        exact closure with `./gradlew build` before finalizing a vendor set.
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/MovingBlocks/Terasology
+  notes: >
+    Spec and extraction recipe written from direct inspection of the real,
+    public, Apache-2.0-licensed repository — not from decompiling or
+    reverse-engineering any proprietary game.
+version: 0.1.0

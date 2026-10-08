@@ -1,0 +1,89 @@
+name: Slot-and-Bag Inventory
+category: inventory
+summary: Equipment slots plus expandable bags with pickup/equip/use/drop, selectively extracted from a GPL-licensed open-source roguelike.
+description: >
+  A character's carried items are split between a fixed set of equipment
+  slots (weapon, armor, artifact, misc, rings) and named bags with their
+  own capacities (potion bandolier, scroll holder, velvet pouch). Items
+  stack, can be identified/cursed, and are moved between slots and bags.
+  This component demonstrates DecDev's selective-extraction recipe: it
+  pulls the inventory module out of a complete game rather than vendoring
+  the whole game.
+reference_games:
+  - Shattered Pixel Dungeon
+  - Diablo
+  - NetHack
+genre_tags: [roguelike, rpg, dungeon-crawler]
+capability:
+  inputs:
+    - { name: pickup_item, type: ItemId }
+    - { name: equip_item, type: ItemId }
+    - { name: drop_item, type: ItemId }
+    - { name: use_item, type: ItemId }
+  outputs:
+    - { name: inventory_state, type: Belongings }
+    - { name: equipped_slots, type: EquipmentSlots }
+  events:
+    - { name: ItemPickedUp }
+    - { name: ItemEquipped }
+    - { name: ItemDropped }
+    - { name: BagOpened }
+  dependencies: [ItemRegistry, ActorStats]
+  invariants:
+    - "An item instance is stored in at most one slot or bag at a time."
+    - "Each equipment slot holds at most one item."
+    - "A bag's contents never exceed that bag's capacity."
+  determinism: best-effort
+implementations:
+  - engine: other
+    language: Java
+    url: https://github.com/00-Evan/shattered-pixel-dungeon
+    license: GPL-3.0
+    maturity: production-tested
+    extraction:
+      include:
+        - "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/items/Item.java"
+        - "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/items/bags/"
+        - "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/hero/Belongings.java"
+        - "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/windows/WndBag.java"
+      entry_points:
+        - { path: "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/hero/Belongings.java", symbol: "Belongings", description: "Model of what the hero carries: fixed equipment slots plus the list of bags; the state an adapter reads and mutates." }
+        - { path: "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/windows/WndBag.java", symbol: "WndBag", description: "Grid window that renders a bag's contents and drives move/use/drop actions — the UI seam for the capability." }
+        - { path: "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/items/Item.java", symbol: "Item", description: "Base item type: stack size, identification/cursed state, actions and bundle serialization." }
+      exclude:
+        - "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/sprites/"
+        - "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/scenes/"
+        - "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/levels/"
+        - "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/mobs/"
+        - "core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/buffs/"
+        - "android/"
+        - "ios/"
+        - "desktop/"
+        - "services/"
+      external_dependencies:
+        - { name: libGDX, purpose: "UI framework used by WndBag and the item sprites it renders (com.badlogic.gdx)." }
+      build_requirements: >
+        Java (upstream targets modern JDK via Gradle) and Gradle; libGDX
+        for rendering. The inventory classes also reference the game's
+        Dungeon/GameScene singletons and the ItemSpriteSheet, so a usable
+        adapter needs more than the four include entries — this is a
+        first-pass module boundary.
+      notes: >
+        Verified directly against the real repository (GitHub contents API +
+        raw file fetch, 2026-10-08) on master: Belongings.java exists at
+        actors/hero/ and declares `public class Belongings implements
+        Iterable<Item>` with real contains/getSimilar/clear methods;
+        WndBag.java exists and imports items.bags.* and belongs to the
+        windows package; items/Item.java declares `public class Item
+        implements Bundlable`; items/bags/ contains Bag.java plus the
+        concrete bags. Source-file headers grant GPLv3-or-later; the
+        checked-in LICENSE.txt is GPLv3.
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/00-Evan/shattered-pixel-dungeon
+  notes: >
+    Spec and extraction recipe written from direct inspection of the real,
+    public, GPL-3.0-licensed repository — not from decompiling or
+    reverse-engineering any proprietary game.
+version: 0.1.0

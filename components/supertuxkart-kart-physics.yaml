@@ -1,0 +1,90 @@
+name: Kart Vehicle Physics
+category: vehicle
+summary: Arcade kart vehicle simulation with per-wheel steering, engine force, drift and slip, selectively extracted from a GPL-licensed racing game.
+description: >
+  A Bullet-based vehicle model: throttle applies engine force, steering
+  rotates the front wheels, a sliding state raises or lowers lateral
+  friction to trigger and hold drifts, and suspension keeps the chassis on
+  the track. This component demonstrates DecDev's selective-extraction
+  recipe: it pulls the vehicle-physics module out of a full racing game
+  rather than vendoring the whole game.
+reference_games:
+  - Mario Kart
+  - Crash Team Racing
+  - SuperTuxKart
+genre_tags: [racing, arcade]
+capability:
+  inputs:
+    - { name: throttle, type: float, description: "-1..1" }
+    - { name: steer, type: float, description: "-1..1" }
+    - { name: brake, type: bool }
+    - { name: drift_pressed, type: bool }
+  outputs:
+    - { name: body_transform, type: transform }
+    - { name: wheel_slip, type: float }
+    - { name: speed, type: float }
+  events:
+    - { name: DriftStarted }
+    - { name: DriftEnded }
+    - { name: NitroActivated }
+  dependencies: [PhysicsBody, Input, CollisionWorld]
+  invariants:
+    - "Lateral slip never exceeds the configured friction cap while drifting is inactive."
+    - "The chassis is kept upright by the suspension model rather than teleported back to the track."
+  determinism: best-effort
+implementations:
+  - engine: other
+    language: C++
+    url: https://github.com/supertuxkart/stk-code
+    license: GPL-3.0-or-later
+    maturity: production-tested
+    extraction:
+      include:
+        - "src/physics/btKart.cpp"
+        - "src/physics/btKart.hpp"
+        - "src/physics/physics.cpp"
+        - "src/physics/physics.hpp"
+        - "src/physics/kart_motion_state.hpp"
+        - "src/physics/physical_object.cpp"
+        - "src/physics/physical_object.hpp"
+      entry_points:
+        - { path: "src/physics/btKart.cpp", symbol: "btKart::updateFriction", description: "Per-step tire model: applies lateral friction, and relaxes it to induce a slide when drifting." }
+        - { path: "src/physics/btKart.cpp", symbol: "btKart::updateVehicle", description: "Advances the Bullet raycast vehicle: suspension, engine force and steering per wheel." }
+        - { path: "src/physics/btKart.hpp", symbol: "btKart::applyEngineForce", description: "Applies throttle/brake force to a wheel — the natural adapter seam for a custom input model." }
+      exclude:
+        - "src/graphics/"
+        - "src/states_screens/"
+        - "src/modes/"
+        - "src/tracks/"
+        - "src/race/"
+        - "src/audio/"
+        - "data/"
+        - "lib/"
+        - "assets/"
+      external_dependencies:
+        - { name: Bullet, purpose: "Physics engine the vehicle extends (btActionInterface / raycast vehicle)." }
+        - { name: Irrlicht, purpose: "Rendering/engine types used by the surrounding physics code." }
+      build_requirements: >
+        C++ (C++17), CMake. SuperTuxKart builds against its own vendored
+        Bullet and Irrlicht trees, so the include paths and Bullet variant
+        must match the upstream build; the physics module also references
+        the game's kart and track abstractions, which are outside the
+        include list.
+      notes: >
+        Verified directly against the real repository (GitHub contents API +
+        raw file fetch, 2026-10-08) on master: src/physics/ contains
+        btKart.cpp/.hpp, physics.cpp/.hpp, kart_motion_state.hpp and
+        physical_object.cpp/.hpp; btKart is declared in btKart.hpp as a
+        btActionInterface with real public updateFriction, updateVehicle
+        and applyEngineForce methods. The COPYING file states the code is
+        GPLv3-or-later. This is a first-pass module boundary, not a fully
+        resolved dependency graph.
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/supertuxkart/stk-code
+  notes: >
+    Spec and extraction recipe written from direct inspection of the real,
+    public, GPL-3.0-or-later-licensed repository — not from decompiling or
+    reverse-engineering any proprietary game.
+version: 0.1.0

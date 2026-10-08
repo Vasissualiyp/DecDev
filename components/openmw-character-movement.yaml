@@ -1,0 +1,91 @@
+name: Physics-Driven Character Movement
+category: character-controller
+summary: Walk/run/swim movement with steering and path-following, selectively extracted from a GPL-licensed open-source engine reimplementation.
+description: >
+  Drives a character's position, rotation and movement state from player
+  input on top of a physics world: ground and water movement, running,
+  turning towards a target heading, and smooth steering that avoids
+  obstacles. This component demonstrates DecDev's selective-extraction
+  recipe: it pulls the mechanics module out of a whole game engine rather
+  than vendoring the engine.
+reference_games:
+  - "The Elder Scrolls III: Morrowind"
+  - Mirror's Edge
+genre_tags: [rpg, open-world, parkour]
+capability:
+  inputs:
+    - { name: move_input, type: vector2, description: "Forward/strafe axes, -1..1" }
+    - { name: run_pressed, type: bool }
+    - { name: jump_pressed, type: bool }
+    - { name: target_heading, type: float, description: "Desired facing angle, radians" }
+  outputs:
+    - { name: velocity, type: vector3 }
+    - { name: is_moving, type: bool }
+    - { name: movement_state, type: MovementState }
+  events:
+    - { name: MovementStarted }
+    - { name: MovementStopped }
+    - { name: Turned }
+  dependencies: [PhysicsBody, Input, CollisionWorld, Pathfinding]
+  invariants:
+    - "Movement speed is derived from the actor's stats and encumbrance, not a fixed constant."
+    - "A smooth turn rotates toward the target heading without overshooting it."
+  determinism: best-effort
+implementations:
+  - engine: other
+    language: C++
+    url: https://github.com/OpenMW/openmw
+    license: GPL-3.0
+    maturity: production-tested
+    extraction:
+      include:
+        - "apps/openmw/mwmechanics/character.cpp"
+        - "apps/openmw/mwmechanics/character.hpp"
+        - "apps/openmw/mwmechanics/movement.hpp"
+        - "apps/openmw/mwmechanics/steering.cpp"
+        - "apps/openmw/mwmechanics/steering.hpp"
+      entry_points:
+        - { path: "apps/openmw/mwmechanics/character.cpp", symbol: "MWMechanics::CharacterController::update", description: "Per-frame character state and movement update — position, rotation, animation state and water/ground handling." }
+        - { path: "apps/openmw/mwmechanics/movement.hpp", symbol: "MWMechanics::Movement", description: "Plain movement-state struct (position, rotation, speed, movement flags) passed between input, mechanics and physics." }
+        - { path: "apps/openmw/mwmechanics/steering.cpp", symbol: "MWMechanics::smoothTurn", description: "Turns an actor toward a target heading without overshoot; pair with zTurn and the path/obstacle helpers in the same file." }
+      exclude:
+        - "apps/openmw/mwrender/"
+        - "apps/openmw/mwgui/"
+        - "apps/openmw/mwsound/"
+        - "apps/openmw/mwworld/"
+        - "apps/openmw/mwinput/"
+        - "apps/opencs/"
+        - "apps/esmtool/"
+        - "apps/wizard/"
+        - "docs/"
+        - "files/"
+        - "extern/"
+      external_dependencies:
+        - { name: Bullet, purpose: "Collision/physics world the movement integrates with (OpenMW's physics layer)." }
+        - { name: OpenSceneGraph, purpose: "osg math types (e.g. osg::DegreesToRadians) referenced by the steering helpers." }
+      build_requirements: >
+        C++ (the upstream project builds with modern standards via CMake),
+        OpenSceneGraph, Bullet and Boost. The mechanics module also depends
+        on OpenMW's shared components/ library and the mwworld/mwbase
+        interfaces, so the transitive closure is considerably larger than
+        the include list — plan for adapter work.
+      notes: >
+        Verified directly against the real repository (GitHub contents API +
+        raw file fetch, 2026-10-08) on master: mwmechanics/ contains
+        character.cpp/.hpp, movement.hpp and steering.cpp/.hpp; the
+        CharacterController class is declared in character.hpp under
+        namespace MWMechanics with a real public update(float) method, the
+        Movement struct is real in movement.hpp, and smoothTurn/zTurn are
+        real free functions in steering.hpp. character.cpp is coupled to
+        rendering and world types (MWRender, MWWorld), so this is a
+        first-pass boundary rather than a drop-in minimal vendor set.
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/OpenMW/openmw
+  notes: >
+    Spec and extraction recipe written from direct inspection of the real,
+    public, GPL-3.0-licensed repository (a clean-room engine
+    reimplementation) — not from decompiling or reverse-engineering any
+    proprietary game.
+version: 0.1.0
