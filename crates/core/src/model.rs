@@ -19,6 +19,11 @@ pub struct Component {
     pub reference_games: Vec<String>,
     #[serde(default)]
     pub genre_tags: Vec<String>,
+    /// Manually-asserted relationships to other components, by slug — never
+    /// computed. See `Compatibility` and
+    /// `specs/01-capability-spec-format.md`.
+    #[serde(default)]
+    pub compatibility: Vec<Compatibility>,
     pub capability: Capability,
     pub implementations: Vec<Implementation>,
     pub license: String,
@@ -124,6 +129,38 @@ pub struct Provenance {
     pub derived_from: Option<String>,
     #[serde(default)]
     pub legal_review: Option<bool>,
+}
+
+/// One hand-written compatibility assertion, authored on the component it
+/// appears on and pointing at another component by slug. `relation` is
+/// optional; absent means `pairs-with`. There is no reciprocal requirement in
+/// the file — the reverse direction is derived for display (see
+/// `inbound_compatibility`).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Compatibility {
+    #[serde(rename = "with")]
+    pub with_slug: String,
+    #[serde(default)]
+    pub relation: Option<String>,
+    pub note: String,
+}
+
+/// Every assertion authored on *other* components that points at `slug`,
+/// paired with the component that authored it — the reciprocal view the CLI
+/// and site render so a relationship recorded once shows on both pages.
+pub fn inbound_compatibility<'a>(
+    all: &'a [Component],
+    slug: &str,
+) -> Vec<(&'a Component, &'a Compatibility)> {
+    all.iter()
+        .filter(|c| c.slug != slug)
+        .flat_map(|c| {
+            c.compatibility
+                .iter()
+                .filter(move |entry| entry.with_slug == slug)
+                .map(move |entry| (c, entry))
+        })
+        .collect()
 }
 
 impl Component {

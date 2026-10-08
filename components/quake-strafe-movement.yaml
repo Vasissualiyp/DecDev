@@ -36,3 +36,11 @@ provenance:
   type: original
   notes: Written from publicly documented Quake movement-physics writeups, no engine source referenced.
 version: 0.1.0
+compatibility:
+  - with: wall-run-movement
+    relation: pairs-with
+    note: >
+      Both drive horizontal velocity from a shared move-input contract.
+      Wall-running takes over horizontal control while active, so the strafe
+      air-acceleration path must yield to the wall-run state rather than run
+      alongside it.

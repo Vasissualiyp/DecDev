@@ -76,3 +76,10 @@ provenance:
     public, GPL-3.0-or-later-licensed repository — not from decompiling or
     reverse-engineering any proprietary game.
 version: 0.1.0
+compatibility:
+  - with: fastnoise-lite
+    relation: pairs-with
+    note: >
+      The terrain generator's height and biome fields are noise-driven;
+      FastNoiseLite can supply the deterministic seeded noise layer without
+      pulling in Veloren's own noise crate.

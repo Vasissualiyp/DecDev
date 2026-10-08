@@ -13,6 +13,17 @@ interface Props {
 }
 
 const { component } = Astro.props;
+
+// Compatibility is authored once, on one of the pair; derive the reciprocal
+// direction here so a relationship shows on BOTH components' pages.
+const ownCompatibility = component.compatibility ?? [];
+const inboundCompatibility = loadComponents()
+  .filter((other) => other.slug !== component.slug)
+  .flatMap((other) =>
+    (other.compatibility ?? [])
+      .filter((entry) => entry.with === component.slug)
+      .map((entry) => ({ from: other, entry })),
+  );
 ---
 
 <!doctype html>
@@ -205,6 +216,27 @@ const { component } = Astro.props;
         )}
       </div>
     ))}
+
+    {(ownCompatibility.length > 0 || inboundCompatibility.length > 0) && (
+      <section>
+        <h2>Compatibility</h2>
+        <ul>
+          {ownCompatibility.map((entry) => (
+            <li>
+              <a href={`/components/${entry.with}/`}><code class="inline">{entry.with}</code></a>
+              {" "}({entry.relation ?? "pairs-with"}) — {entry.note}
+            </li>
+          ))}
+          {inboundCompatibility.map(({ from, entry }) => (
+            <li>
+              Referenced by{" "}
+              <a href={`/components/${from.slug}/`}><code class="inline">{from.slug}</code></a>
+              {" "}({entry.relation ?? "pairs-with"}) — {entry.note}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
 
     <h2>License &amp; provenance</h2>
     <dl>

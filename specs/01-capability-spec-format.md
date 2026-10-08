@@ -110,6 +110,24 @@ Save as `/schema/component.schema.json`.
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
       "description": "Optional; treat an absent version as 0.1.0 by convention. Note: ajv does not apply JSON Schema 'default' values unless instantiated with useDefaults: true, and this spec does not require that — don't rely on a default magically appearing on the parsed object."
+    },
+    "compatibility": {
+      "type": "array",
+      "description": "Manually-asserted relationships to other components, by slug. NOT computed — a maintainer adds an entry by hand after actually trying the pair together (see specs/01-capability-spec-format.md). Each entry is displayed on this component's page and, in the reciprocal direction, on the referenced component's page.",
+      "items": {
+        "type": "object",
+        "required": ["with", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "with": { "type": "string", "minLength": 1, "description": "Slug of the other component. Must name a component that exists; a dangling reference fails validation." },
+          "relation": {
+            "type": "string",
+            "enum": ["pairs-with", "conflicts-with", "supersedes"],
+            "description": "Optional. Absent means 'pairs-with' by convention."
+          },
+          "note": { "type": "string", "minLength": 1, "description": "Plain-language note: what was actually tried and what happened." }
+        }
+      }
     }
   },
   "$defs": {
@@ -191,7 +209,7 @@ Save as `/schema/component.schema.json`.
 }
 ```
 
-Three validation rules are not expressible in plain JSON Schema (all
+Four validation rules are not expressible in plain JSON Schema (all
 enforced in `crates/core/src/validate.rs`, see `05-validation-ci.md` — not
 optional, all covered by required test cases in `specs/07-testing.md`):
 
@@ -210,6 +228,12 @@ optional, all covered by required test cases in `specs/07-testing.md`):
    automatically supports extraction with no validator changes. See
    "Selective extraction" below for why this exists and what it does not
    permit.
+4. Every `compatibility[].with` must name a known component's slug and
+   must not be the component's own slug. Unlike rules 1–3 this is a
+   **cross-file** rule — it can only be checked once the whole catalog is
+   loaded, so it lives in `load_and_validate_sources` (not `validate_one`),
+   and a single-file `decdev validate <path>` deliberately does not apply
+   it. See "Compatibility assertions" below.
 
 ## `implementations[].url` and `demo_url` must be real — no exceptions
 
@@ -305,6 +329,35 @@ See the real, full version of this file for the complete recipe —
 every path and symbol in it was verified against the actual public
 repository before being written down, not guessed at (the same standard
 every link in this registry is held to, see above).
+
+## Compatibility assertions
+
+`compatibility` is an optional top-level array of hand-written
+relationships to other components, by slug. It is explicitly **not
+computed** — a maintainer adds an entry after actually trying the pair, so
+the catalog carries human judgment that CI cannot derive (see
+`docs/architecture.md` section E on why composition stays out of scope for
+automation).
+
+Each entry:
+
+- `with` (required): the slug of the other component. Must name a
+  component that exists and must not be the component itself — dangling
+  and self references fail validation (rule 4 above).
+- `relation` (optional): `pairs-with`, `conflicts-with`, or `supersedes`.
+  An absent `relation` means `pairs-with`.
+- `note` (required): plain language — what was tried, and what the
+  integrator should watch for. Interface-level observations ("both drive
+  horizontal velocity from the same move-input contract; the wall-run
+  state must take over while active") are the expected form; a seed note
+  is not a claim that the two have been run together.
+
+A relationship is authored **once**, on one side of the pair. Both
+`decdev show` and the component detail page derive the reciprocal
+direction (`decdev_core::inbound_compatibility`) so the note appears on
+both components' pages without being duplicated in the YAML. If a
+reference is removed on its authored side, the reciprocal view disappears
+with it — there is a single source of truth.
 
 ## Example: `/components/quake-strafe-movement.yaml`
 

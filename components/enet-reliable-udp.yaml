@@ -42,3 +42,10 @@ provenance:
     Written from direct inspection of the real, public, MIT-licensed
     repository.
 version: 0.1.0
+compatibility:
+  - with: gamenetworkingsockets-transport
+    relation: conflicts-with
+    note: >
+      Both own the UDP socket and provide reliable delivery, so use one
+      transport per connection. They are alternatives, not layers —
+      combining them would duplicate sequencing and encryption.

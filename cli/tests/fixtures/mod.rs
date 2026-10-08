@@ -139,3 +139,29 @@ pub fn write_source(dir: &std::path::Path, files: &[(&str, &str)]) {
         std::fs::write(dir.join(name), content).unwrap();
     }
 }
+
+/// A component that asserts compatibility with `a` (the slug of
+/// `MOVEMENT_A`), for testing `show`'s own + reciprocal rendering.
+pub const COMPAT_OWNER: &str = r#"
+name: Compat Owner
+category: other
+summary: Owns a compatibility assertion for testing.
+capability:
+  inputs: []
+  outputs: []
+  events: []
+  dependencies: []
+  determinism: none
+implementations:
+  - engine: other
+    language: C++
+    url: https://example.invalid/compat
+    license: MIT
+compatibility:
+  - with: a
+    relation: pairs-with
+    note: Pairs with movement A for testing.
+license: MIT
+provenance:
+  type: original
+"#;

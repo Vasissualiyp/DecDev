@@ -61,7 +61,15 @@ One static page per file in `/components`, generated via Astro's
 reference games, capability contract (inputs/outputs/events/dependencies/
 invariants/determinism), implementations (each as a card with engine,
 language, license, maturity, link to repo, link to demo if present),
-license, provenance, version.
+compatibility, license, provenance, version.
+
+The compatibility section lists the component's own
+`compatibility` entries (linked to the referenced component's page) and,
+derived, any other component whose `compatibility` points at this one
+("Referenced by …") — so a relationship authored once shows on both
+pages. An extraction recipe (`implementations[].extraction`) renders its
+include paths, entry points, exclusions, dependencies and build
+requirements when present.
 
 Each implementation's `url` and `demo_url` render as plain outbound links.
 Do not embed, iframe, or proxy anything from the linked repo — DecDev hosts

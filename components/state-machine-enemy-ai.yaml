@@ -42,3 +42,10 @@ provenance:
   type: original
   notes: Hierarchical FSM pattern from public AI-for-games literature.
 version: 0.1.0
+compatibility:
+  - with: godot-navigation-server
+    relation: pairs-with
+    note: >
+      The AI state machine supplies a destination; the navigation server
+      supplies the path and per-frame waypoints. Wire the move-to state to a
+      path query rather than steering straight at the target.

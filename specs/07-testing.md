@@ -45,6 +45,13 @@ time someone adds a component.
   actually proves the rule is generic and doesn't key off the literal
   string `open_source_derived`, don't skip it.
 - `extraction.entry_points` missing (schema-required) fails.
+- `extraction.entry_points` missing (schema-required) fails.
+- `compatibility` cross-file rule: a component whose `compatibility[].with`
+  names another component in the same fixture set passes; an unknown slug
+  fails ("does not name a known component"); `with` equal to the
+  component's own slug fails ("own slug"). Schema-level: a missing `note`,
+  or a `relation` outside `pairs-with`/`conflicts-with`/`supersedes`,
+  fails.
 - License allow-list check: one passing case per allow-listed license, one
   failing case for an arbitrary unrecognized string.
 - `load_and_validate_components()` against a fixture directory containing
@@ -83,7 +90,9 @@ at fixtures), and/or an external fixture directory passed via `--source`:
   includes a suggestion for a close typo (test with a one-character-off
   slug against a fixture set); a fixture component with an
   `implementations[].extraction` block prints its `include` paths and
-  `entry_points` in the output.
+  `entry_points` in the output; a fixture with a `compatibility` entry
+  prints it on the authoring component and the reciprocal
+  `compatibility (referenced by):` entry on the referenced one.
 - `validate`: a fixture with one valid and one invalid file reports both
   correctly, exits `1`; an all-valid fixture set exits `0`; explicit path
   arguments validate only those files and ignore `--source`.
@@ -165,6 +174,9 @@ are scoped to rendering only:
   XSS hole on community-submitted content.
 - A fixture component whose implementation carries an `extraction` block
   renders its `include` paths and `entry_points` on the detail page.
+- A fixture component whose `compatibility` names another renders the note
+  on both pages: its own entry (linked to the other component) and, on the
+  referenced component's page, a "Referenced by" entry.
 
 ## Coverage expectation
 

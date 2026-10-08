@@ -1,7 +1,7 @@
 mod fixtures;
 
 use assert_cmd::Command;
-use fixtures::{write_components, EXTRACTION_COMPONENT, MOVEMENT_A};
+use fixtures::{write_components, COMPAT_OWNER, EXTRACTION_COMPONENT, MOVEMENT_A};
 use predicates::prelude::*;
 
 #[test]
@@ -56,5 +56,46 @@ fn show_unknown_slug_exits_nonzero_with_a_close_typo_suggestion() {
         .stderr(
             predicate::str::contains("Unknown component: quake-strafee")
                 .and(predicate::str::contains("quake-strafe")),
+        );
+}
+
+#[test]
+fn show_prints_an_authored_compatibility_entry() {
+    let dir = tempfile::tempdir().unwrap();
+    write_components(
+        dir.path(),
+        &[("a.yaml", MOVEMENT_A), ("owner.yaml", COMPAT_OWNER)],
+    );
+
+    Command::cargo_bin("decdev")
+        .unwrap()
+        .current_dir(dir.path())
+        .args(["show", "owner"])
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("with: a")
+                .and(predicate::str::contains("Pairs with movement A")),
+        );
+}
+
+#[test]
+fn show_prints_the_reciprocal_compatibility_on_the_referenced_component() {
+    let dir = tempfile::tempdir().unwrap();
+    write_components(
+        dir.path(),
+        &[("a.yaml", MOVEMENT_A), ("owner.yaml", COMPAT_OWNER)],
+    );
+
+    Command::cargo_bin("decdev")
+        .unwrap()
+        .current_dir(dir.path())
+        .args(["show", "a"])
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("referenced by")
+                .and(predicate::str::contains("owner"))
+                .and(predicate::str::contains("Pairs with movement A")),
         );
 }

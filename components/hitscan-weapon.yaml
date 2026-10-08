@@ -36,3 +36,10 @@ provenance:
   type: original
   notes: Generic hitscan pattern; no engine source referenced.
 version: 0.1.0
+compatibility:
+  - with: gamenetworkingsockets-transport
+    relation: pairs-with
+    note: >
+      Multiplayer hitscan needs the shot resolved on the authoritative peer
+      and the hit result sent back. Use a reliable lane for the fire event
+      and an unreliable lane for interpolation between them.

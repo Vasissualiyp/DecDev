@@ -71,6 +71,16 @@ export interface Provenance {
   legal_review?: boolean;
 }
 
+/** One hand-written compatibility assertion, authored on this component and
+ * pointing at another by slug. The reverse direction is derived for display,
+ * see the detail page. Cross-file reference validity is enforced in
+ * crates/core, not re-checked here. */
+export interface Compatibility {
+  with: string;
+  relation?: string;
+  note: string;
+}
+
 export interface Component {
   slug: string;
   name: string;
@@ -81,6 +91,7 @@ export interface Component {
   genre_tags: string[];
   capability: Capability;
   implementations: Implementation[];
+  compatibility?: Compatibility[];
   license: string;
   provenance: Provenance;
   version?: string;

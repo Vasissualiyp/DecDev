@@ -35,7 +35,7 @@ pub fn run(args: ShowArgs, extra_sources: &[PathBuf]) -> i32 {
                     }
                 }
             } else {
-                print_human(component);
+                print_human(component, &valid);
                 0
             }
         }
@@ -52,7 +52,7 @@ pub fn run(args: ShowArgs, extra_sources: &[PathBuf]) -> i32 {
     }
 }
 
-fn print_human(c: &Component) {
+fn print_human(c: &Component, all: &[Component]) {
     println!("name: {}", c.name);
     println!("slug: {}", c.slug);
     println!("category: {}", c.category);
@@ -114,6 +114,25 @@ fn print_human(c: &Component) {
         }
         if let Some(extraction) = &implementation.extraction {
             print_extraction(extraction);
+        }
+    }
+
+    if !c.compatibility.is_empty() {
+        println!("compatibility:");
+        for entry in &c.compatibility {
+            let relation = entry.relation.as_deref().unwrap_or("pairs-with");
+            println!(
+                "  - with: {} ({}) — {}",
+                entry.with_slug, relation, entry.note
+            );
+        }
+    }
+    let inbound = decdev_core::inbound_compatibility(all, &c.slug);
+    if !inbound.is_empty() {
+        println!("compatibility (referenced by):");
+        for (from, entry) in inbound {
+            let relation = entry.relation.as_deref().unwrap_or("pairs-with");
+            println!("  - {} ({}) — {}", from.slug, relation, entry.note);
         }
     }
 

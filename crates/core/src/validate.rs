@@ -1,5 +1,5 @@
 use crate::model::Component;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::path::{Path, PathBuf};
 
 const SCHEMA_STR: &str = include_str!("../../../schema/component.schema.json");
@@ -99,6 +99,37 @@ pub fn load_and_validate_sources(sources: &[PathBuf]) -> (Vec<Component>, Vec<Va
                     file: path,
                     message,
                 }),
+            }
+        }
+    }
+
+    // Cross-file rule (not expressible per-file in JSON Schema or in
+    // `validate_one`, since it needs the whole catalog): every
+    // `compatibility[].with` must name a known component, and a component
+    // may not assert compatibility with itself.
+    let known: HashSet<&str> = valid.iter().map(|c| c.slug.as_str()).collect();
+    for component in &valid {
+        let path = seen
+            .get(&component.slug)
+            .cloned()
+            .unwrap_or_else(|| PathBuf::from(&component.slug));
+        for entry in &component.compatibility {
+            if entry.with_slug == component.slug {
+                errors.push(ValidationError {
+                    file: path.clone(),
+                    message: format!(
+                        "compatibility[].with '{}' is the component's own slug",
+                        entry.with_slug
+                    ),
+                });
+            } else if !known.contains(entry.with_slug.as_str()) {
+                errors.push(ValidationError {
+                    file: path.clone(),
+                    message: format!(
+                        "compatibility[].with '{}' does not name a known component",
+                        entry.with_slug
+                    ),
+                });
             }
         }
     }
@@ -615,5 +646,65 @@ provenance:
         let (valid, errors) = load_and_validate_sources(&[first.path().to_path_buf(), missing]);
         assert_eq!(valid.len(), 1);
         assert_eq!(errors.len(), 1);
+    }
+
+    fn with_compatibility(block: &str) -> String {
+        MINIMAL_VALID.replacen(
+            "provenance:",
+            &format!("compatibility:\n{block}provenance:"),
+            1,
+        )
+    }
+
+    #[test]
+    fn compatibility_referencing_a_known_component_passes() {
+        let a = with_compatibility("  - with: b\n    note: tried together\n");
+        let dir = write_fixture_dir(&[("a.yaml", &a), ("b.yaml", MINIMAL_VALID)]);
+        let (valid, errors) = load_and_validate_components(dir.path());
+        assert_eq!(valid.len(), 2);
+        assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    }
+
+    #[test]
+    fn compatibility_with_an_unknown_slug_fails() {
+        let a = with_compatibility("  - with: nope\n    note: tried together\n");
+        let dir = write_fixture_dir(&[("a.yaml", &a)]);
+        let (valid, errors) = load_and_validate_components(dir.path());
+        assert_eq!(valid.len(), 1);
+        assert_eq!(errors.len(), 1);
+        assert!(
+            errors[0]
+                .message
+                .contains("does not name a known component"),
+            "unexpected message: {}",
+            errors[0].message
+        );
+    }
+
+    #[test]
+    fn compatibility_with_its_own_slug_fails() {
+        let a = with_compatibility("  - with: a\n    note: self\n");
+        let dir = write_fixture_dir(&[("a.yaml", &a)]);
+        let (_, errors) = load_and_validate_components(dir.path());
+        assert_eq!(errors.len(), 1);
+        assert!(
+            errors[0].message.contains("own slug"),
+            "unexpected message: {}",
+            errors[0].message
+        );
+    }
+
+    #[test]
+    fn compatibility_missing_note_fails_schema() {
+        let a = with_compatibility("  - with: b\n");
+        let dir = write_fixture_dir(&[("a.yaml", &a), ("b.yaml", MINIMAL_VALID)]);
+        assert!(!load_and_validate_components(dir.path()).1.is_empty());
+    }
+
+    #[test]
+    fn compatibility_relation_outside_the_enum_fails_schema() {
+        let a = with_compatibility("  - with: b\n    relation: maybe\n    note: x\n");
+        let dir = write_fixture_dir(&[("a.yaml", &a), ("b.yaml", MINIMAL_VALID)]);
+        assert!(!load_and_validate_components(dir.path()).1.is_empty());
     }
 }

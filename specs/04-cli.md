@@ -73,7 +73,12 @@ results (zero results is not an error). `--json` as above.
 
 Prints the full component spec for one slug, human-readable by default
 (every field, labeled, in the order from the example in
-`specs/01-capability-spec-format.md`), or raw JSON with `--json`. Exits `1`
+`specs/01-capability-spec-format.md`), or raw JSON with `--json`. Human
+output also prints the component's own `compatibility` entries and,
+derived, any components whose `compatibility` names this slug
+(`compatibility (referenced by):`), matching the website's reciprocal
+rendering — see `specs/01-capability-spec-format.md`'s "Compatibility
+assertions". Exits `1`
 with a clear error (`Unknown component: <slug>`) if the slug doesn't exist
 — also print the closest-matching slugs (simple Levenshtein or substring
 suggestion) to help a typo. Looks up by slug across valid components only.

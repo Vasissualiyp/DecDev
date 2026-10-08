@@ -45,6 +45,9 @@ const FIXTURES: Component[] = [
         license: "MIT",
       },
     ],
+    compatibility: [
+      { with: "test-extraction", relation: "pairs-with", note: "Pairs with the extraction fixture." },
+    ],
     license: "MIT",
     provenance: { type: "original" },
   },
@@ -141,6 +144,16 @@ describe("/components/[slug]", () => {
     const html = readDist(path.join("components", "test-extraction", "index.html"));
     expect(html).toContain("world/src/sim/");
     expect(html).toContain("WorldSim::generate");
+  });
+
+  it("renders a compatibility note on both the authored and the referenced page", () => {
+    const authored = readDist(path.join("components", "test-movement", "index.html"));
+    expect(authored).toContain('href="/components/test-extraction/"');
+    expect(authored).toContain("Pairs with the extraction fixture.");
+
+    const referenced = readDist(path.join("components", "test-extraction", "index.html"));
+    expect(referenced).toContain("Referenced by");
+    expect(referenced).toContain("Pairs with the extraction fixture.");
   });
 });
 

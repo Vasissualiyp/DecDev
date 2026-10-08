@@ -40,3 +40,10 @@ provenance:
   type: original
   notes: Standard BSP/MST room-gen approach described in public roguelike talks.
 version: 0.1.0
+compatibility:
+  - with: libtcod-field-of-view
+    relation: pairs-with
+    note: >
+      Room generation produces the tile grid the FOV transparency map is
+      built from. Combine after the level grid exists and before spawning
+      actors, so visibility and placement see the same map.

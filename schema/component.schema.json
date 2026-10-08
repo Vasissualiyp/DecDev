@@ -93,6 +93,24 @@
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
       "description": "Optional; treat an absent version as 0.1.0 by convention. Note: ajv does not apply JSON Schema 'default' values unless instantiated with useDefaults: true, and this spec does not require that — don't rely on a default magically appearing on the parsed object."
+    },
+    "compatibility": {
+      "type": "array",
+      "description": "Manually-asserted relationships to other components, by slug. NOT computed — a maintainer adds an entry by hand after actually trying the pair together (see specs/01-capability-spec-format.md). Each entry is displayed on this component's page and, in the reciprocal direction, on the referenced component's page.",
+      "items": {
+        "type": "object",
+        "required": ["with", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "with": { "type": "string", "minLength": 1, "description": "Slug of the other component. Must name a component that exists; a dangling reference fails validation." },
+          "relation": {
+            "type": "string",
+            "enum": ["pairs-with", "conflicts-with", "supersedes"],
+            "description": "Optional. Absent means 'pairs-with' by convention."
+          },
+          "note": { "type": "string", "minLength": 1, "description": "Plain-language note: what was actually tried and what happened." }
+        }
+      }
     }
   },
   "$defs": {

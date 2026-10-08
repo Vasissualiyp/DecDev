@@ -41,3 +41,11 @@ provenance:
     Written from direct inspection of the real, public, MIT-licensed
     repository.
 version: 0.1.0
+compatibility:
+  - with: branching-dialogue-tree
+    relation: pairs-with
+    note: >
+      Both expose a "current node plus choices" dialogue contract. ink adds
+      a compiled script format, while the tree component's node model can
+      back the same interface — pick one as the source of truth rather than
+      nesting both.

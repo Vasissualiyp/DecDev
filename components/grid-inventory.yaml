@@ -36,3 +36,10 @@ provenance:
   type: original
   notes: Grid inventory modeled from publicly documented tarkov-like layouts.
 version: 0.1.0
+compatibility:
+  - with: shattered-pixel-dungeon-inventory
+    relation: pairs-with
+    note: >
+      Both are fixed-collection inventories with stacking. The extraction
+      seed's bag model maps onto this component's place/move/rotate actions;
+      expect to reconcile slot-count and stack-merge rules.

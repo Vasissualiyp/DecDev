@@ -36,3 +36,10 @@ provenance:
   type: original
   notes: Common third-person camera pattern described from public GDC talks and tutorials.
 version: 0.1.0
+compatibility:
+  - with: openmw-character-movement
+    relation: pairs-with
+    note: >
+      The orbit camera consumes the character's facing and velocity outputs.
+      The two must agree on which system owns heading — the camera reads it,
+      the movement controller writes it — or the orbit will fight the turn.

@@ -161,7 +161,14 @@ No website, no full CLI, no CI yet beyond the scaffolding above.
     pairs (a free-text or small-enum field maintainers add by hand after
     actually trying the pair together) — explicitly not computed. **Done
     when**: at least 5 component pairs carry a compatibility note visible
-    on both detail pages.
+    on both detail pages. **Done**: optional top-level `compatibility`
+    (`{with, relation?, note}`) added to the schema/model; a cross-file
+    rule (in `load_and_validate_sources`) rejects dangling and self
+    references; a relationship is authored once and the reciprocal
+    direction is derived (`decdev_core::inbound_compatibility`) by both
+    `decdev show` and the detail page. 9 seed assertions authored across 8
+    pairs (including one `conflicts-with`); core/CLI/site test cases added;
+    spec 01 documents the field and rule 4.
 14. Revisit the v0 schema against what the 30–50+ real specs from Tier 2
     revealed was awkward or missing; write the v0.1 diff as a proposal in
     `docs/architecture.md` before implementing it — don't silently evolve
