@@ -1,7 +1,7 @@
 # Testing spec
 
-Every crate/package in this repo (`crates/core`, `cli/`, `api/`, `site/`,
-and the alpha-tier MCP server when it exists) ships with tests. No task in
+Every crate/package in this repo (`crates/core`, `cli/`, `api/`, `mcp/`,
+`site/`) ships with tests. No task in
 `specs/06-build-plan.md` is done when it merely "works when I tried it by
 hand" — it's done when its behavior is pinned down by a test that fails if
 the behavior regresses. "Extensively tested" below is deliberately
@@ -113,6 +113,26 @@ components loaded through `decdev_core`. Every endpoint and error path in
 - `GET /search?q=` returns only the components matching the query.
 - `GET /search?q=` with no match returns `200` and `[]` (not an error).
 - `GET /search` with no `q` returns `400`.
+
+## `mcp/` (MCP stdio server)
+
+Tests in `mcp/tests/` call the tool handlers and the JSON-RPC dispatcher
+directly against fixture components (no stdin/stdout, no spawned process),
+per `specs/09-mcp.md`:
+
+- `tool_list` returns every fixture component.
+- `tool_search` returns only the matching `{slug, name, category}` records.
+- `tool_show` returns the full component for a known slug and an
+  `unknown component: <slug>` error for an unknown one.
+- `handle_message` `initialize` echoes the requested `protocolVersion` and
+  reports `serverInfo.name == "decdev"`.
+- `notifications/initialized` (and any notification, i.e. no `id`) gets no
+  response.
+- `tools/list` exposes exactly `list`, `show`, `search`.
+- `tools/call search` returns success with the matching records;
+  `tools/call show` with a missing `slug` is a tool error (`isError: true`),
+  not a protocol error.
+- An unknown method with an `id` returns JSON-RPC `-32601`.
 
 ## `site/`
 

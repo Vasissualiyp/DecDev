@@ -76,7 +76,7 @@ rationale in [`specs/00-overview.md`](specs/00-overview.md):
 - **CLI and infra: Rust.** The shared schema-validation library
   (`crates/core`), the CLI (`cli/`), and the backend (the read-only REST
   API in `api/`; an MCP server later) are Rust, compiled to native
-  binaries, one Cargo workspace (`members = ["crates/core", "cli", "api"]`).
+  binaries, one Cargo workspace (`members = ["crates/core", "cli", "api", "mcp"]`).
   No Node/TypeScript here, ever — the CLI is meant to be installed like
   `ripgrep` or `fd`, not like an npm package.
   - **If an agent proposes Node/TypeScript/Python for the CLI, the shared
@@ -148,6 +148,9 @@ provides a working Rust toolchain). The package name for the CLI crate is
 - `nix develop --command cargo run -p decdev-api -- --port 8080` — the
   read-only REST API (`specs/08-api.md`); same `--source` semantics as the
   CLI, strict load-on-startup.
+- `nix develop --command cargo run -p decdev-mcp` — the MCP stdio server
+  (`specs/09-mcp.md`); same `--source` semantics, speaks newline-delimited
+  JSON-RPC on stdio.
 - `nix develop --command npm test --prefix site` / `npm run build --prefix site`
   — the `site/` package's tests and build (the build's `prebuild` step runs
   `decdev export` from `PATH`, so build the Rust side first).

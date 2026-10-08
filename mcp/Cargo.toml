@@ -1,0 +1,20 @@
+[package]
+name = "decdev-mcp"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "decdev-mcp"
+path = "src/main.rs"
+
+[lib]
+name = "decdev_mcp"
+path = "src/lib.rs"
+
+[dependencies]
+decdev-core = { path = "../crates/core" }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = "3"

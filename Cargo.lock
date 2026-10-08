@@ -388,6 +388,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "decdev-mcp"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "decdev-core",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
 name = "difflib"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

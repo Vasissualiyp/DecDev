@@ -139,12 +139,16 @@ No website, no full CLI, no CI yet beyond the scaffolding above.
 11. MCP server wrapping the same three operations as MCP tools (`search`,
     `show`, `list` — matching the CLI's command names and arguments so an
     agent using either surface learns one vocabulary). Also Rust, also a
-    new workspace member (`mcp/`) — use a Rust MCP SDK if one fits
-    cleanly, otherwise implement the MCP stdio/JSON-RPC protocol directly
-    against `decdev-core`; either way, not Node. **Done when**: an
-    MCP-capable client can call `search` and get the same results as
-    `decdev search`, *and* each tool has a `cargo test` calling its
-    handler directly against fixture data.
+    new workspace member (`mcp/`, package `decdev-mcp`) — full spec in
+    `specs/09-mcp.md`. **Done when**: an MCP-capable client can call
+    `search` and get the same results as `decdev search`, *and* each tool
+    has a `cargo test` calling its handler directly against fixture data.
+    **Done**: implemented directly against the MCP stdio/JSON-RPC protocol
+    (`serde_json` + `clap` only — no SDK and no async runtime, per the spec
+    note), sharing `Component::matches_query` and the same strict
+    load-on-startup as the CLI; 9 handler/dispatcher tests in
+    `mcp/tests/mcp.rs`; smoke-tested over real stdio (initialize,
+    tools/list, tools/call search/show against the 30-component catalog).
 12. Minimal accounts + voting/bookmarking. This is the first feature that
     needs a real database — use SQLite via `rusqlite` (Rust, same
     workspace; no ORM needed at this scale), most likely as part of the

@@ -2,7 +2,7 @@
 
 ```
 /
-├── Cargo.toml                     # workspace root, members = ["crates/core", "cli", "api"]
+├── Cargo.toml                     # workspace root, members = ["crates/core", "cli", "api", "mcp"]
 ├── Cargo.lock
 ├── rust-toolchain.toml             # pins the Rust version used in CI
 ├── .gitignore                      # target/, site/node_modules/, site/dist/, site/.astro/, site/src/data/components.json
@@ -41,6 +41,13 @@
 │   │   └── lib.rs                    # router() + handlers, testable without a socket
 │   └── tests/
 │       └── api.rs                    # drives router() with tower oneshot
+├── mcp/                             # binary crate "decdev-mcp" — MCP stdio server (specs/09-mcp.md)
+│   ├── Cargo.toml                    # serde_json/clap only; depends on decdev-core via path
+│   ├── src/
+│   │   ├── main.rs                   # stdio JSON-RPC loop, load+validate once
+│   │   └── lib.rs                    # Catalog tool handlers + handle_message(), no I/O
+│   └── tests/
+│       └── mcp.rs                    # drives the handlers/dispatcher directly
 ├── site/                            # independent npm project — NOT a Cargo workspace member
 │   ├── astro.config.mjs
 │   ├── package.json
@@ -63,7 +70,7 @@
 
 Notes:
 
-- The Rust side (`crates/core`, `cli/`, `api/`) and `site/` are two separate
+- The Rust side (`crates/core`, `cli/`, `api/`, `mcp/`) and `site/` are two separate
   dependency ecosystems that never import each other's code. Their only
   integration point is `site/src/data/components.json`, produced by
   running the compiled `decdev` binary (`decdev export > site/src/data/components.json`)
@@ -71,13 +78,13 @@ Notes:
   this (assuming `decdev` is on `PATH`, i.e. the Rust side has been built
   first) — document the two-step local setup in `CONTRIBUTING.md` rather
   than trying to make `npm run build` silently build Rust code too.
-- `crates/core` is a library crate (no `main.rs`), depended on by `cli/`
-  and `api/` via path dependencies (`decdev-core = { path = "../crates/core" }`
+- `crates/core` is a library crate (no `main.rs`), depended on by `cli/`,
+  `api/` and `mcp/` via path dependencies (`decdev-core = { path = "../crates/core" }`
   in each `Cargo.toml`). It is Rust's analog of what would otherwise be a
   shared npm package — same "write the logic once, both consumers import
   it" rule, just within one language's workspace instead of across two.
-  `cli/` and `api/` are sibling binaries and never depend on each other;
-  they share only `crates/core`.
+  `cli/`, `api/` and `mcp/` are sibling binaries and never depend on each
+  other; they share only `crates/core`.
 - Nothing under `components/` is executable, in either language. There is
   no `install` step that runs contributor code.
 - `site/src/data/components.json` is build output, not source — it's

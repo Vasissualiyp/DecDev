@@ -32,8 +32,8 @@ Public API (`src/validate.rs`):
   the one definition of search matching, shared by `decdev search` and the
   API's `/search` (`specs/08-api.md`).
 
-Do not duplicate this logic anywhere else — `cli/`'s commands and `api/`'s
-handlers all go through these shared functions.
+Do not duplicate this logic anywhere else — `cli/`'s commands, `api/`'s
+handlers and `mcp/`'s tools all go through these shared functions.
 
 ## License allow-list check
 
