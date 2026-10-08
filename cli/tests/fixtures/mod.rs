@@ -108,3 +108,34 @@ pub fn write_components(dir: &std::path::Path, files: &[(&str, &str)]) {
         std::fs::write(components.join(name), content).unwrap();
     }
 }
+
+/// A component that lives only in an external `--source` directory, with a
+/// slug distinct from the in-repo fixtures, for testing external sources.
+pub const SOURCE_ONLY: &str = r#"
+name: Sourced Component
+category: physics
+summary: A component provided by an external source directory.
+capability:
+  inputs: []
+  outputs: []
+  events: []
+  dependencies: []
+  determinism: none
+implementations:
+  - engine: Godot
+    language: GDScript
+    url: https://example.invalid/sourced
+    license: MIT
+license: MIT
+provenance:
+  type: original
+"#;
+
+/// Writes component YAML files directly into `dir` — an external source
+/// directory for the CLI's `--source` flag — unlike `write_components`,
+/// which nests them under a `components/` subdirectory.
+pub fn write_source(dir: &std::path::Path, files: &[(&str, &str)]) {
+    for (name, content) in files {
+        std::fs::write(dir.join(name), content).unwrap();
+    }
+}

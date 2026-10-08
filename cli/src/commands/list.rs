@@ -1,4 +1,5 @@
 use clap::Args;
+use std::path::PathBuf;
 
 #[derive(Args)]
 pub struct ListArgs {
@@ -10,13 +11,16 @@ pub struct ListArgs {
     json: bool,
 }
 
-pub fn run(args: ListArgs) -> i32 {
-    let Some(dir) = crate::common::find_components_dir() else {
-        eprintln!("could not find a 'components' directory in the current directory or any parent");
-        return 1;
+pub fn run(args: ListArgs, extra_sources: &[PathBuf]) -> i32 {
+    let sources = match crate::common::resolve_sources(extra_sources) {
+        Ok(sources) => sources,
+        Err(message) => {
+            eprintln!("{message}");
+            return 1;
+        }
     };
 
-    let (mut valid, _errors) = decdev_core::load_and_validate_components(&dir);
+    let (mut valid, _errors) = decdev_core::load_and_validate_sources(&sources);
     if let Some(category) = &args.category {
         valid.retain(|c| &c.category == category);
     }

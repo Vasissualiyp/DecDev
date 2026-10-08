@@ -83,8 +83,8 @@ No website, no full CLI, no CI yet beyond the scaffolding above.
 9. Grow seed set to 30–50 components across all `category` values, at least
    3 different `implementations[].engine` values represented. **Done when**:
    every category filter on `/` returns at least one result. (As of the
-   extraction-recipe work below, the seed set is at 12 — this task is not
-   yet done.)
+   extraction-recipe work and the four extra provenance-verified seed
+   components below, the seed set is at 16 — this task is not yet done.)
 10. Add selective-extraction recipes (`implementations[].extraction`) per
     `specs/01-capability-spec-format.md`'s "Selective extraction" section
     — schema + the generic non-schema rule (`derived_from` set,
@@ -102,6 +102,22 @@ No website, no full CLI, no CI yet beyond the scaffolding above.
     extraction of the upstream source, adapter generation, or resolving
     multiple components' recipes together — see `docs/architecture.md`
     sections B/E.
+11. Add external component sources — the CLI's repeatable global
+    `--source <DIR>` extension point and
+    `decdev_core::load_and_validate_sources()`, per `specs/04-cli.md`:
+    extra local directories of `*.yaml` component specs are validated with
+    the same rules and merged with the discovered `components/`, with a
+    duplicate slug across sources a hard error. **Done when**:
+    `list`/`search`/`show`/`export` all see a fixture component that exists
+    only in an extra source; `validate` reports that source; `--source`
+    works when no `components/` is discoverable; a slug duplicated between
+    `components/` and a source fails `validate` and makes `export`
+    all-or-nothing; and the `crates/core` + `cli/` cases in
+    `specs/07-testing.md` pass. Explicitly out of scope, and staying out
+    (see `docs/architecture.md` sections C/I/J): fetching or cloning remote
+    sources, executable plugin code, config-file-driven sources, or
+    anything that would let a pull request make the central CI load content
+    outside its own `components/`.
 
 ## Tier 3 — 1–3 month alpha
 

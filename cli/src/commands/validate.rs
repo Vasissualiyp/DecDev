@@ -8,21 +8,24 @@ pub struct ValidateArgs {
     paths: Vec<PathBuf>,
 }
 
-pub fn run(args: ValidateArgs) -> i32 {
+pub fn run(args: ValidateArgs, extra_sources: &[PathBuf]) -> i32 {
     if args.paths.is_empty() {
-        run_on_components_dir()
+        run_on_sources(extra_sources)
     } else {
         run_on_explicit_paths(&args.paths)
     }
 }
 
-fn run_on_components_dir() -> i32 {
-    let Some(dir) = crate::common::find_components_dir() else {
-        eprintln!("could not find a 'components' directory in the current directory or any parent");
-        return 1;
+fn run_on_sources(extra_sources: &[PathBuf]) -> i32 {
+    let sources = match crate::common::resolve_sources(extra_sources) {
+        Ok(sources) => sources,
+        Err(message) => {
+            eprintln!("{message}");
+            return 1;
+        }
     };
 
-    let (valid, errors) = decdev_core::load_and_validate_components(&dir);
+    let (valid, errors) = decdev_core::load_and_validate_sources(&sources);
 
     let mut rows: Vec<(String, Result<(), String>)> = valid
         .iter()

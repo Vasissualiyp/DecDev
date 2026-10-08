@@ -51,16 +51,22 @@ time someone adds a component.
   one valid and one invalid file returns both the valid component *and*
   the error for the invalid one — i.e. one bad file must not silently
   swallow or block loading of the rest.
+- `load_and_validate_sources()` (the `--source` backing function): two
+  source directories each containing a valid component are merged into one
+  result; the *same top-level slug* in two sources is a hard error naming
+  the duplicate (never a silent last-one-wins override); a missing/
+  unreadable source directory is reported as an error but does not block
+  the other sources from loading.
 
 ## `cli/`
 
 Integration tests in `cli/tests/`, using `assert_cmd` (spawns the compiled
 `decdev` binary — fast enough in Rust that this is the standard approach,
 unlike spawning a subprocess per test in Node) + `predicates` for
-assertions on stdout/stderr/exit code, run against a fixture components
-directory (point the binary at it via a `--components-dir` flag or an env
-var the commands read — don't hardcode `/components` as the only possible
-location, or these tests can't use fixtures):
+assertions on stdout/stderr/exit code, run with the process's working
+directory set to a temp dir containing a fixture `components/` directory
+(the loader walks up from the cwd, so `current_dir` is how tests point it
+at fixtures), and/or an external fixture directory passed via `--source`:
 
 - `list`: returns all fixture components; `--category` filters correctly;
   `--json` output is valid JSON matching the fixture data; a component
@@ -79,11 +85,19 @@ location, or these tests can't use fixtures):
   `implementations[].extraction` block prints its `include` paths and
   `entry_points` in the output.
 - `validate`: a fixture with one valid and one invalid file reports both
-  correctly, exits `1`; an all-valid fixture set exits `0`.
+  correctly, exits `1`; an all-valid fixture set exits `0`; explicit path
+  arguments validate only those files and ignore `--source`.
 - `export`: an all-valid fixture set prints the full JSON array to stdout
   and exits `0`; a fixture set containing even one invalid file prints
   **nothing** to stdout, prints the error(s) to stderr, and exits `1` —
   this is the invariant the website build depends on, test it explicitly.
+- `--source` (the external-component-sources / "plugin" mechanism): each
+  of `list`, `search`, `show`, `export` includes a component that exists
+  only in the external source directory; `validate` reports that source's
+  files too; `--source` works even when no `components/` directory is
+  discoverable from the cwd; a slug duplicated between the discovered
+  `components/` and a `--source` makes `validate` fail and makes `export`
+  all-or-nothing (nothing on stdout, exit `1`).
 
 ## `site/`
 

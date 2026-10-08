@@ -77,6 +77,21 @@ while leaving room (but making no promises) for deeper composition later.
   generation, accounts/payments, benchmarking infrastructure, a custom engine
   or IR runtime.
 
+**External component sources (community "plugins").** The CLI accepts
+repeatable `--source <DIR>` directories of additional component specs,
+validated with the same rules and merged with the central `components/`.
+This is deliberately data-only: a source is a directory of YAML, never
+executable code, so it adds no code-execution surface (section I) and no
+hosted-fetch step (section C). The central registry's CI never passes
+`--source`, so it stays hermetic and a pull request cannot make it load
+external content; a duplicate slug across sources is a hard error rather
+than a silent override. It gives contributors a sanctioned way to run their
+own recipe sets (mostly FOSS) without forking DecDev or waiting on the
+central catalog, while the project's own legal gate (section J) still
+applies to everything DecDev itself loads and publishes. It is not, and
+will not become, a mechanism for DecDev to host or endorse unauthorized
+sources — it does not change section J.
+
 ## B. Game Capability IR (v0 — descriptive, not executable)
 
 v0 is deliberately just a structured contract *description*, not a

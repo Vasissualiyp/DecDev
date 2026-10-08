@@ -1,15 +1,20 @@
-/// Finds the components directory, loads and validates every component in
-/// it, and prints the result. Strict: any validation error means nothing is
-/// printed to stdout and the process exits 1 — this is the invariant the
+/// Finds the component source directories (the discovered `components/`
+/// plus any `--source` extras), loads and validates every component in
+/// them, and prints the result. Strict: any validation error means nothing
+/// is printed to stdout and the process exits 1 — this is the invariant the
 /// website build (`decdev export > site/src/data/components.json`) depends
-/// on.
-pub fn run() -> i32 {
-    let Some(components_dir) = crate::common::find_components_dir() else {
-        eprintln!("could not find a 'components' directory in the current directory or any parent");
-        return 1;
+/// on. The website build passes no `--source`, so it is unaffected by this
+/// flag.
+pub fn run(extra_sources: &[std::path::PathBuf]) -> i32 {
+    let sources = match crate::common::resolve_sources(extra_sources) {
+        Ok(sources) => sources,
+        Err(message) => {
+            eprintln!("{message}");
+            return 1;
+        }
     };
 
-    let (valid, errors) = decdev_core::load_and_validate_components(&components_dir);
+    let (valid, errors) = decdev_core::load_and_validate_sources(&sources);
 
     if !errors.is_empty() {
         for error in &errors {

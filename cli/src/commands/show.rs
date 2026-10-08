@@ -1,5 +1,6 @@
 use clap::Args;
 use decdev_core::{Component, Extraction};
+use std::path::PathBuf;
 
 #[derive(Args)]
 pub struct ShowArgs {
@@ -9,13 +10,16 @@ pub struct ShowArgs {
     json: bool,
 }
 
-pub fn run(args: ShowArgs) -> i32 {
-    let Some(dir) = crate::common::find_components_dir() else {
-        eprintln!("could not find a 'components' directory in the current directory or any parent");
-        return 1;
+pub fn run(args: ShowArgs, extra_sources: &[PathBuf]) -> i32 {
+    let sources = match crate::common::resolve_sources(extra_sources) {
+        Ok(sources) => sources,
+        Err(message) => {
+            eprintln!("{message}");
+            return 1;
+        }
     };
 
-    let (valid, _errors) = decdev_core::load_and_validate_components(&dir);
+    let (valid, _errors) = decdev_core::load_and_validate_sources(&sources);
 
     match valid.iter().find(|c| c.slug == args.slug) {
         Some(component) => {

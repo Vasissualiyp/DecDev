@@ -1,4 +1,5 @@
 use crate::model::Component;
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 const SCHEMA_STR: &str = include_str!("../../../schema/component.schema.json");
@@ -22,45 +23,83 @@ pub struct ValidationError {
     pub message: String,
 }
 
+fn schema_validator() -> jsonschema::Validator {
+    let schema_value: serde_json::Value = serde_json::from_str(SCHEMA_STR)
+        .expect("embedded schema/component.schema.json must be valid JSON");
+    jsonschema::validator_for(&schema_value)
+        .expect("embedded schema/component.schema.json must be a valid JSON Schema")
+}
+
 /// Reads every `*.yaml` file under `dir`, validates each against
 /// `schema/component.schema.json` plus the non-schema rules documented in
 /// specs/01-capability-spec-format.md (legal_review, derived_from, license
 /// allow-list), and returns (valid components, errors) — one bad file does
 /// not block the rest. Both lists are ordered by filename for determinism.
+/// Thin wrapper over `load_and_validate_sources` for the common
+/// single-source case (the default `components/` directory).
 pub fn load_and_validate_components(dir: &Path) -> (Vec<Component>, Vec<ValidationError>) {
-    let schema_value: serde_json::Value = serde_json::from_str(SCHEMA_STR)
-        .expect("embedded schema/component.schema.json must be valid JSON");
-    let validator = jsonschema::validator_for(&schema_value)
-        .expect("embedded schema/component.schema.json must be a valid JSON Schema");
+    let dir = dir.to_path_buf();
+    load_and_validate_sources(std::slice::from_ref(&dir))
+}
 
+/// Reads every `*.yaml` file from each source directory in order, validates
+/// each with the same rules as `load_and_validate_components`, and merges
+/// the results. This is what backs the CLI's repeatable `--source` flag:
+/// users can point DecDev at their own additional directories of component
+/// specs (their own recipes, a local fork, a third-party "plugin" repo)
+/// without editing the central registry. The central repo's CI never passes
+/// `--source`, so it stays hermetic — see `specs/04-cli.md`.
+///
+/// A duplicate slug across sources is a validation error rather than a
+/// silent last-one-wins, since the "plugin" mechanism must not let one
+/// source quietly shadow another's component. One bad file does not block
+/// the rest.
+pub fn load_and_validate_sources(sources: &[PathBuf]) -> (Vec<Component>, Vec<ValidationError>) {
+    let validator = schema_validator();
     let mut valid = Vec::new();
     let mut errors = Vec::new();
+    let mut seen: BTreeMap<String, PathBuf> = BTreeMap::new();
 
-    let entries = match std::fs::read_dir(dir) {
-        Ok(entries) => entries,
-        Err(e) => {
-            errors.push(ValidationError {
-                file: dir.to_path_buf(),
-                message: format!("could not read directory: {e}"),
-            });
-            return (valid, errors);
-        }
-    };
+    for dir in sources {
+        let entries = match std::fs::read_dir(dir) {
+            Ok(entries) => entries,
+            Err(e) => {
+                errors.push(ValidationError {
+                    file: dir.clone(),
+                    message: format!("could not read directory: {e}"),
+                });
+                continue;
+            }
+        };
 
-    let mut paths: Vec<PathBuf> = entries
-        .filter_map(|e| e.ok())
-        .map(|e| e.path())
-        .filter(|p| p.extension().and_then(|s| s.to_str()) == Some("yaml"))
-        .collect();
-    paths.sort();
+        let mut paths: Vec<PathBuf> = entries
+            .filter_map(|e| e.ok())
+            .map(|e| e.path())
+            .filter(|p| p.extension().and_then(|s| s.to_str()) == Some("yaml"))
+            .collect();
+        paths.sort();
 
-    for path in paths {
-        match validate_one(&path, &validator) {
-            Ok(component) => valid.push(component),
-            Err(message) => errors.push(ValidationError {
-                file: path,
-                message,
-            }),
+        for path in paths {
+            match validate_one(&path, &validator) {
+                Ok(component) => match seen.get(&component.slug) {
+                    Some(previous) => errors.push(ValidationError {
+                        file: path,
+                        message: format!(
+                            "duplicate component slug '{}' — already provided by {}",
+                            component.slug,
+                            previous.display()
+                        ),
+                    }),
+                    None => {
+                        seen.insert(component.slug.clone(), path.clone());
+                        valid.push(component);
+                    }
+                },
+                Err(message) => errors.push(ValidationError {
+                    file: path,
+                    message,
+                }),
+            }
         }
     }
 
@@ -72,10 +111,7 @@ pub fn load_and_validate_components(dir: &Path) -> (Vec<Component>, Vec<Validati
 /// explicit file arguments. Recompiles the schema validator on each call —
 /// fine at CLI-invocation scale, not meant for hot loops.
 pub fn validate_file(path: &Path) -> Result<Component, String> {
-    let schema_value: serde_json::Value = serde_json::from_str(SCHEMA_STR)
-        .expect("embedded schema/component.schema.json must be valid JSON");
-    let validator = jsonschema::validator_for(&schema_value)
-        .expect("embedded schema/component.schema.json must be a valid JSON Schema");
+    let validator = schema_validator();
     validate_one(path, &validator)
 }
 
@@ -541,6 +577,42 @@ provenance:
             ("b-invalid.yaml", &invalid),
         ]);
         let (valid, errors) = load_and_validate_components(dir.path());
+        assert_eq!(valid.len(), 1);
+        assert_eq!(errors.len(), 1);
+    }
+
+    #[test]
+    fn sources_from_multiple_directories_are_merged() {
+        let first = write_fixture_dir(&[("a.yaml", MINIMAL_VALID)]);
+        let second = write_fixture_dir(&[("b.yaml", MINIMAL_VALID)]);
+        let (valid, errors) =
+            load_and_validate_sources(&[first.path().to_path_buf(), second.path().to_path_buf()]);
+        assert!(errors.is_empty());
+        assert_eq!(valid.len(), 2);
+    }
+
+    #[test]
+    fn duplicate_slug_across_sources_is_an_error_not_a_silent_override() {
+        let first = write_fixture_dir(&[("shared.yaml", MINIMAL_VALID)]);
+        let second = write_fixture_dir(&[("shared.yaml", MINIMAL_VALID)]);
+        let (valid, errors) =
+            load_and_validate_sources(&[first.path().to_path_buf(), second.path().to_path_buf()]);
+        assert_eq!(valid.len(), 1);
+        assert_eq!(errors.len(), 1);
+        assert!(
+            errors[0]
+                .message
+                .contains("duplicate component slug 'shared'"),
+            "unexpected message: {}",
+            errors[0].message
+        );
+    }
+
+    #[test]
+    fn an_unreadable_source_does_not_block_the_other_sources() {
+        let first = write_fixture_dir(&[("a.yaml", MINIMAL_VALID)]);
+        let missing = first.path().join("does-not-exist");
+        let (valid, errors) = load_and_validate_sources(&[first.path().to_path_buf(), missing]);
         assert_eq!(valid.len(), 1);
         assert_eq!(errors.len(), 1);
     }
