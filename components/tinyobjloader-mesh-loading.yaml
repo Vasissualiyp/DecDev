@@ -1,0 +1,41 @@
+name: Wavefront Mesh Loading
+category: rendering
+summary: Single-header OBJ/MTL loader producing indexed triangle meshes, normals, UVs and material groups.
+description: >
+  Parses Wavefront `.obj` geometry and companion `.mtl` material files into
+  indexed vertex/index buffers with positions, normals, texture
+  coordinates and per-face material names. Small and dependency-free, so
+  it is commonly compiled directly into an engine's asset pipeline.
+reference_games:
+  - (engine-agnostic asset loader)
+genre_tags: [engine, tooling]
+capability:
+  inputs:
+    - { name: obj_source, type: string }
+    - { name: triangulate_faces, type: bool }
+  outputs:
+    - { name: vertices, type: VertexList }
+    - { name: indices, type: IndexList }
+    - { name: material_groups, type: MaterialGroupList }
+  events:
+    - { name: MeshLoaded }
+    - { name: MeshLoadFailed }
+  dependencies: []
+  invariants:
+    - "Every emitted triangle references valid indices into the vertex list."
+    - "If triangulation is disabled, non-triangular faces are reported to the caller rather than silently dropped."
+  determinism: strict
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/tinyobjloader/tinyobjloader
+    license: MIT
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/tinyobjloader/tinyobjloader
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository.
+version: 0.1.0

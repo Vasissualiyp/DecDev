@@ -1,0 +1,44 @@
+name: Reliable UDP Transport
+category: networking
+summary: Encrypted, reliable-UDP client/server transport with message lanes, fragmentation and connection state.
+description: >
+  A game-oriented transport on top of UDP: connection handshakes with
+  encryption and authentication, reliable ordered/unreliable message
+  lanes, fragmentation and reassembly of large payloads, and
+  keep-alive/timeout handling. Delivers both reliable control traffic and
+  lossy game-state traffic over one socket.
+reference_games:
+  - Counter-Strike
+  - Dota 2
+genre_tags: [multiplayer, shooter]
+capability:
+  inputs:
+    - { name: connect_request, type: Address }
+    - { name: outgoing_message, type: ByteBuffer }
+    - { name: lane, type: LaneId }
+  outputs:
+    - { name: incoming_messages, type: MessageList }
+    - { name: connection_state, type: ConnectionState }
+  events:
+    - { name: Connected }
+    - { name: Disconnected }
+    - { name: MessageReceived }
+  dependencies: [UdpSocket, Crypto]
+  invariants:
+    - "Reliable messages are delivered exactly once and in lane order."
+    - "A connection is considered lost after the configured timeout with no acknowledgement."
+  determinism: none
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/ValveSoftware/GameNetworkingSockets
+    license: BSD-3-Clause
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/ValveSoftware/GameNetworkingSockets
+  notes: >
+    Written from direct inspection of the real, public, BSD-3-Clause
+    repository.
+version: 0.1.0

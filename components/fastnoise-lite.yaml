@@ -1,0 +1,40 @@
+name: Fast Noise
+category: procgen
+summary: "Single-file seedable noise library — Perlin, simplex, cellular and value noise with fractal and domain warping."
+description: >
+  Produces coherent 2D/3D noise from a seed across several algorithms
+  (OpenSimplex2, Perlin, value, cellular), with fractal octaves, domain
+  warping and configurable frequency. The whole library is one
+  dependency-free C/C++ source file, so it drops into any project.
+reference_games:
+  - Minecraft
+  - No Man's Sky
+genre_tags: [terrain, procedural]
+capability:
+  inputs:
+    - { name: position, type: Vector2 }
+    - { name: seed, type: int }
+    - { name: frequency, type: float }
+  outputs:
+    - { name: noise_value, type: float, description: "Normalised to -1..1" }
+  events:
+    - { name: NoiseSampled }
+  dependencies: []
+  invariants:
+    - "The same position, seed, frequency and settings produce the same value on every platform (strict determinism)."
+    - "Noise is coherent: nearby inputs produce nearby outputs."
+  determinism: strict
+implementations:
+  - engine: engine-agnostic
+    language: C
+    url: https://github.com/Auburn/FastNoiseLite
+    license: MIT
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/Auburn/FastNoiseLite
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository.
+version: 0.1.0

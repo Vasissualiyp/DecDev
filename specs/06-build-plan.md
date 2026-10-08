@@ -82,9 +82,10 @@ No website, no full CLI, no CI yet beyond the scaffolding above.
    file.
 9. Grow seed set to 30–50 components across all `category` values, at least
    3 different `implementations[].engine` values represented. **Done when**:
-   every category filter on `/` returns at least one result. (As of the
-   extraction-recipe work and the four extra provenance-verified seed
-   components below, the seed set is at 16 — this task is not yet done.)
+   every category filter on `/` returns at least one result. **Done**: 30
+   components; all 15 `category` values represented (animation, rendering
+   and networking were the last gaps); engines Unity, Godot, Unreal,
+   engine-agnostic and other all present; every `url` link-checked.
 10. Add selective-extraction recipes (`implementations[].extraction`) per
     `specs/01-capability-spec-format.md`'s "Selective extraction" section
     — schema + the generic non-schema rule (`derived_from` set,

@@ -1,0 +1,40 @@
+name: Cross-platform Render Hardware Abstraction
+category: rendering
+summary: Backend-agnostic 3D rendering layer that maps one API onto D3D, Metal, Vulkan, OpenGL and WebGPU.
+description: >
+  A thin rendering abstraction: submit vertex/index buffers, shaders and
+  draw calls tagged with a view id, and the library translates them to the
+  active graphics backend each frame. Handles render targets, view
+  ordering and resource lifetime, so gameplay code stays API-agnostic.
+reference_games:
+  - (engine-agnostic rendering library)
+genre_tags: [engine, rendering]
+capability:
+  inputs:
+    - { name: vertex_buffer, type: BufferHandle }
+    - { name: shader_program, type: ShaderHandle }
+    - { name: draw_call, type: DrawCall }
+    - { name: view_id, type: ViewId }
+  outputs:
+    - { name: rendered_frame, type: FrameHandle }
+  events:
+    - { name: FrameSubmitted }
+  dependencies: [GraphicsBackend]
+  invariants:
+    - "Draw calls within a view are rendered in submission order."
+    - "A backend that fails to initialise does not partially render — startup aborts."
+  determinism: best-effort
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/bkaradzic/bgfx
+    license: BSD-2-Clause
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/bkaradzic/bgfx
+  notes: >
+    Written from direct inspection of the real, public, BSD-2-Clause
+    repository.
+version: 0.1.0

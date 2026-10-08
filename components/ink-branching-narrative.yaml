@@ -1,0 +1,43 @@
+name: Branching Narrative Script
+category: dialogue
+summary: Runtime for a branching narrative scripting language with choices, variables and weave-based flow.
+description: >
+  Evaluates an author-written narrative script into a linear stream of
+  content and choices, tracks variables and visited knots, and resolves
+  conditional and woven branches. The script is authored in a plain-text
+  language and compiled once, then executed by the runtime.
+reference_games:
+  - Heaven's Vault
+  - 80 Days
+genre_tags: [adventure, narrative]
+capability:
+  inputs:
+    - { name: story_script, type: CompiledStory }
+    - { name: choice_index, type: int }
+    - { name: variable_assignment, type: VariableSet }
+  outputs:
+    - { name: current_text, type: string }
+    - { name: available_choices, type: ChoiceList }
+  events:
+    - { name: StoryAdvanced }
+    - { name: StoryEnded }
+    - { name: VariableChanged }
+  dependencies: [ScriptLoader]
+  invariants:
+    - "Given the same script, choices and variable assignments, the produced text is identical (strict determinism)."
+    - "A choice index selects exactly the choice presented at that step."
+  determinism: strict
+implementations:
+  - engine: engine-agnostic
+    language: C#
+    url: https://github.com/inkle/ink
+    license: MIT
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/inkle/ink
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository.
+version: 0.1.0

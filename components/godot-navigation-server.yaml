@@ -1,0 +1,70 @@
+name: Navigation Server Pathfinding
+category: enemy-ai
+summary: World-size pathfinding service with navigable maps, path queries and avoidance, extracted from an MIT-licensed engine.
+description: >
+  A server-style navigation system: maps are built from navigation meshes,
+  agents and obstacles synchronise into them, and path queries return a
+  waypoint list between two points (optionally with avoidance). Extracted
+  from a full game engine rather than vendoring the engine.
+reference_games:
+  - Godot Engine demos
+  - Unity NavMesh
+genre_tags: [engine, ai]
+capability:
+  inputs:
+    - { name: map_rid, type: Rid }
+    - { name: start_position, type: Vector3 }
+    - { name: target_position, type: Vector3 }
+    - { name: query_parameters, type: PathQueryParameters }
+  outputs:
+    - { name: path_points, type: Vector3List }
+    - { name: path_found, type: bool }
+  events:
+    - { name: PathFound }
+    - { name: PathFailed }
+  dependencies: [NavigationMesh, CollisionWorld]
+  invariants:
+    - "Every returned path is continuous — consecutive waypoints are connected on the navigation map."
+    - "A query against a map with no navigation mesh fails explicitly rather than returning a straight-line path."
+  determinism: best-effort
+implementations:
+  - engine: Godot
+    language: C++
+    url: https://github.com/godotengine/godot
+    license: MIT
+    maturity: production-tested
+    extraction:
+      include:
+        - "servers/navigation_3d/"
+        - "servers/navigation_2d/"
+        - "servers/nav_heap.h"
+      entry_points:
+        - { path: "servers/navigation_3d/navigation_server_3d.h", symbol: "NavigationServer3D", description: "The 3D navigation service interface: map and agent registration plus query_path() between two points." }
+        - { path: "servers/navigation_3d/navigation_path_query_parameters_3d.cpp", symbol: "NavigationPathQueryParameters3D", description: "Per-query configuration (map, start, target, metadata flags) passed to the server." }
+      exclude:
+        - "scene/"
+        - "editor/"
+        - "modules/"
+        - "servers/rendering/"
+        - "platform/"
+      build_requirements: >
+        C++ (C++17) with the engine's SCons build. Part of Godot, not
+        Unity/Unreal — engine: Godot above because this is the engine's own
+        server module. Depends on the engine's core and math types, so the
+        closure is larger than the include list.
+      notes: >
+        Verified against the real repository (GitHub contents API + raw
+        file fetch, 2026-10-08) on master: navigation lives under
+        servers/navigation_3d/ and servers/navigation_2d/ (not
+        modules/navigation), navigation_server_3d.h declares the
+        NavigationServer3D class with get_maps() and query_path(), and
+        servers/nav_heap.h exists. First-pass module boundary.
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/godotengine/godot
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository — not from decompiling or reverse-engineering any
+    proprietary game.
+version: 0.1.0

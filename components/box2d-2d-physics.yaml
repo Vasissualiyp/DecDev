@@ -1,0 +1,42 @@
+name: 2D Rigid Body Physics
+category: physics
+summary: 2D rigid-body simulation with fixtures, joints, CCD and sleeping for platformers and top-down games.
+description: >
+  Simulates flat-world rigid bodies under gravity, resolves contacts
+  against static and dynamic shapes, supports revolute/prismatic joints
+  and continuous collision for fast-moving bodies. Widely used for 2D
+  platformers and top-down action games.
+reference_games:
+  - Angry Birds
+  - Terraria
+genre_tags: [platformer, 2d]
+capability:
+  inputs:
+    - { name: body_definitions, type: Body2DList }
+    - { name: applied_forces, type: Vector2List }
+    - { name: fixed_delta_time, type: float, unit: "s" }
+  outputs:
+    - { name: body_transforms, type: Transform2DList }
+    - { name: contact_points, type: ContactList }
+  events:
+    - { name: CollisionEntered }
+    - { name: CollisionExited }
+  dependencies: [Broadphase2D, CollisionShape2D]
+  invariants:
+    - "A dynamic body's transform changes only through the solver, never by directly setting position."
+    - "Fast-moving bodies do not tunnel through thin static shapes (continuous collision enabled)."
+  determinism: best-effort
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/erincatto/box2d
+    license: MIT
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/erincatto/box2d
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository.
+version: 0.1.0

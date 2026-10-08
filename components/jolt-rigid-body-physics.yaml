@@ -1,0 +1,41 @@
+name: Rigid Body Physics
+category: physics
+summary: Deterministic-ish rigid-body simulation with broadphase, constraints, joints and continuous collision detection.
+description: >
+  Simulates rigid bodies under gravity and applied forces, resolves
+  contacts and joint constraints, and steps the world in fixed substeps
+  with sleep states. Designed for many dynamic bodies (ragdolls, vehicles,
+  debris) and large multi-threaded worlds.
+reference_games:
+  - (engine-agnostic physics library)
+genre_tags: [engine, simulation]
+capability:
+  inputs:
+    - { name: body_definitions, type: BodyList }
+    - { name: applied_forces, type: ForceList }
+    - { name: fixed_delta_time, type: float, unit: "s" }
+  outputs:
+    - { name: body_transforms, type: TransformList }
+    - { name: contact_events, type: ContactList }
+  events:
+    - { name: CollisionEntered }
+    - { name: BodySlept }
+  dependencies: [Broadphase, CollisionShape]
+  invariants:
+    - "Two non-sensor bodies never remain overlapping after a step resolves."
+    - "The simulation advances only in fixed substeps, never by a variable frame delta directly."
+  determinism: best-effort
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/jrouwe/JoltPhysics
+    license: MIT
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/jrouwe/JoltPhysics
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository.
+version: 0.1.0

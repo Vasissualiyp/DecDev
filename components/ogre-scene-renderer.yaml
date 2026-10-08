@@ -1,0 +1,41 @@
+name: Scene Graph Renderer
+category: rendering
+summary: General-purpose 3D scene manager and renderer with a scene graph, materials, shadows and multiple render systems.
+description: >
+  Manages a 3D scene graph of nodes, meshes and materials, culls and
+  renders it through a pluggable render system (OpenGL, D3D, Vulkan,
+  Metal), and handles lights, shadows, skeletal animation and viewports.
+  A full rendering backend rather than a single technique.
+reference_games:
+  - (engine-agnostic 3D renderer)
+genre_tags: [engine, rendering]
+capability:
+  inputs:
+    - { name: scene_root, type: SceneNode }
+    - { name: camera, type: Camera }
+    - { name: render_target, type: RenderTarget }
+  outputs:
+    - { name: rendered_frame, type: FrameHandle }
+    - { name: visible_objects, type: RenderableList }
+  events:
+    - { name: FrameRendered }
+    - { name: ResourceLoaded }
+  dependencies: [GraphicsBackend, ResourceManager]
+  invariants:
+    - "Only nodes within the camera frustum are submitted to the render system (frustum culling)."
+    - "A renderable whose material fails to load is reported, not rendered with a fallback silently."
+  determinism: none
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/OGRECave/ogre
+    license: MIT
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/OGRECave/ogre
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository.
+version: 0.1.0

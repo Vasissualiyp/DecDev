@@ -1,0 +1,44 @@
+name: ENet Reliable UDP
+category: networking
+summary: Lightweight reliable-UDP library with channels, sequencing, fragmentation and optional compression.
+description: >
+  A slim C networking library: connection management over UDP with
+  multiple independent sequenced channels, reliable and unreliable
+  delivery, packet fragmentation/aggregation and CRC32 checksums. Its
+  small size makes it a common drop-in transport for action games.
+reference_games:
+  - Cube 2
+  - Sauerbraten
+genre_tags: [multiplayer, arena-shooter]
+capability:
+  inputs:
+    - { name: connect_to, type: Address }
+    - { name: outgoing_packet, type: ByteBuffer }
+    - { name: channel, type: uint8 }
+    - { name: reliable, type: bool }
+  outputs:
+    - { name: incoming_packets, type: PacketList }
+    - { name: peer_state, type: PeerState }
+  events:
+    - { name: PeerConnected }
+    - { name: PeerDisconnected }
+    - { name: PacketReceived }
+  dependencies: [UdpSocket]
+  invariants:
+    - "Reliable packets on a channel arrive in order exactly once."
+    - "Unreliable packets may be dropped but are never delivered out of order."
+  determinism: none
+implementations:
+  - engine: engine-agnostic
+    language: C
+    url: https://github.com/lsalzman/enet
+    license: MIT
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/lsalzman/enet
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository.
+version: 0.1.0

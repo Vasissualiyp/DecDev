@@ -1,0 +1,68 @@
+name: Animation Tree Blending
+category: animation
+summary: State-machine and blend-tree animation playback, selectively extracted from an MIT-licensed engine's animation module.
+description: >
+  Plays skeletal and property animations through a graph of blend nodes
+  and state-machine transitions: blends run/idle/jump clips by weight,
+  cross-fades transitions, and derives root motion. Extracted from a full
+  game engine rather than vendoring the whole engine.
+reference_games:
+  - Godot Engine demos
+  - Unity Animator
+genre_tags: [engine, animation]
+capability:
+  inputs:
+    - { name: animation_graph, type: AnimationGraph }
+    - { name: parameters, type: Dictionary }
+    - { name: delta_time, type: float, unit: "s" }
+  outputs:
+    - { name: pose, type: SkeletonPose }
+    - { name: root_motion, type: Transform3D }
+  events:
+    - { name: AnimationStarted }
+    - { name: AnimationFinished }
+    - { name: StateEntered }
+  dependencies: [Skeleton, Input]
+  invariants:
+    - "Blend weights within a tree are normalised so the output pose stays a convex combination of the input poses."
+    - "A transition into a state only completes after its configured blend time."
+  determinism: best-effort
+implementations:
+  - engine: Godot
+    language: C++
+    url: https://github.com/godotengine/godot
+    license: MIT
+    maturity: production-tested
+    extraction:
+      include:
+        - "scene/animation/"
+      entry_points:
+        - { path: "scene/animation/animation_tree.cpp", symbol: "AnimationTree", description: "Graph-driven animation player: evaluates blend nodes and state-machine transitions each frame." }
+        - { path: "scene/animation/animation_mixer.cpp", symbol: "AnimationMixer", description: "Base class that owns the active animation list and advances it by delta time." }
+      exclude:
+        - "scene/3d/"
+        - "scene/2d/"
+        - "editor/"
+        - "modules/"
+        - "servers/rendering/"
+        - "platform/"
+      build_requirements: >
+        C++ (C++17) with the engine's SCons build. Part of Godot, not
+        Unity/Unreal — engine: Godot above because the code is the engine's
+        own module. The animation module depends on the engine's core,
+        scene and rendering-server types, so the dependency closure is
+        larger than the include list.
+      notes: >
+        Verified against the real repository (GitHub contents API + raw
+        file fetch, 2026-10-08) on master: scene/animation/ contains
+        animation_tree.cpp and animation_mixer.cpp. First-pass module
+        boundary, not a resolved dependency graph.
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/godotengine/godot
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository — not from decompiling or reverse-engineering any
+    proprietary game.
+version: 0.1.0

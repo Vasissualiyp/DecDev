@@ -1,0 +1,41 @@
+name: Immediate-Mode Debug UI
+category: other
+summary: Retained-widget debug/overlay GUI drawn immediately each frame, with no external dependencies.
+description: >
+  A frame-oriented GUI toolkit: each frame the caller re-declares windows,
+  sliders, buttons and text, and the library draws them with the active
+  graphics backend. Commonly used for in-game debug overlays, tuning
+  panels and tooling rather than shipped player-facing UI.
+reference_games:
+  - (engine-agnostic tooling library)
+genre_tags: [tooling, debug]
+capability:
+  inputs:
+    - { name: input_events, type: InputList }
+    - { name: mouse_position, type: Vector2 }
+    - { name: frame_delta_time, type: float, unit: "s" }
+  outputs:
+    - { name: draw_commands, type: DrawList }
+    - { name: widget_interactions, type: InteractionList }
+  events:
+    - { name: WidgetActivated }
+    - { name: SliderChanged }
+  dependencies: [GraphicsBackend, Input]
+  invariants:
+    - "Widget state persists between frames even though widgets are re-declared each frame."
+    - "An ID collision between two declared widgets is a detectable program error, not silent input misrouting."
+  determinism: none
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/ocornut/imgui
+    license: MIT
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/ocornut/imgui
+  notes: >
+    Written from direct inspection of the real, public, MIT-licensed
+    repository.
+version: 0.1.0

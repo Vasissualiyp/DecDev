@@ -1,0 +1,74 @@
+name: Field-of-View Shadowcasting
+category: procgen
+summary: Multiple FOV algorithms (recursive shadowcasting, diamond raycasting, permissive) over a transparency map.
+description: >
+  Computes which cells a viewer can see given a grid of transparent/
+  opaque cells and a light radius. Ships several interchangeable
+  algorithms — recursive shadowcasting, diamond raycasting, circular
+  raycasting — that trade speed, symmetry and permissiveness differently.
+  Extracted from a larger roguelike toolkit rather than vendoring it.
+reference_games:
+  - Rogue
+  - NetHack
+  - Caves of Qud
+genre_tags: [roguelike, dungeon-crawler]
+capability:
+  inputs:
+    - { name: transparency_map, type: BoolGrid }
+    - { name: origin, type: Point }
+    - { name: radius, type: int }
+  outputs:
+    - { name: visible_cells, type: BoolGrid }
+  events:
+    - { name: FovComputed }
+  dependencies: []
+  invariants:
+    - "The origin cell is always visible."
+    - "A cell is visible only if it is transparent or lies on the boundary of the viewer's light."
+  determinism: strict
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/libtcod/libtcod
+    license: BSD-3-Clause
+    maturity: production-tested
+    extraction:
+      include:
+        - "src/libtcod/fov.cpp"
+        - "src/libtcod/fov.h"
+        - "src/libtcod/fov.hpp"
+        - "src/libtcod/fov_c.c"
+        - "src/libtcod/fov_circular_raycasting.c"
+        - "src/libtcod/fov_diamond_raycasting.c"
+        - "src/libtcod/fov_permissive2.c"
+        - "src/libtcod/fov_recursive_shadowcasting.c"
+        - "src/libtcod/fov_restrictive.c"
+        - "src/libtcod/fov_symmetric_shadowcast.c"
+        - "src/libtcod/fov_types.h"
+      entry_points:
+        - { path: "src/libtcod/fov.hpp", symbol: "TCODMap", description: "Grid map carrying transparency/walkability; set properties per cell, then compute the field of view." }
+        - { path: "src/libtcod/fov.cpp", symbol: "TCODMap::computeFov", description: "Runs the selected FOV algorithm over the map and marks visible cells." }
+      exclude:
+        - "src/libtcod/gui/"
+        - "src/libtcod/renderer_sdl2.c"
+        - "src/libtcod/tileset_"
+        - "samples/"
+        - "tests/"
+      build_requirements: >
+        C/C++ (the FOV files are plain C with a C++ wrapper). No UI backend
+        is needed for FOV itself — the include list deliberately omits the
+        SDL2/xterm renderers.
+      notes: >
+        Verified against the real repository (GitHub contents API + raw
+        file fetch, 2026-10-08) on main: every fov*.c/.h/.hpp file listed
+        exists under src/libtcod/, and TCODMap is a real class in fov.hpp.
+        First-pass boundary; the toolkit's error/logging headers may also
+        be needed to compile the subset.
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/libtcod/libtcod
+  notes: >
+    Written from direct inspection of the real, public, BSD-3-Clause
+    repository.
+version: 0.1.0

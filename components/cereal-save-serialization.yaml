@@ -1,0 +1,40 @@
+name: Save-Game Serialization
+category: other
+summary: Versioned C++ serialization of arbitrary game-state graphs to binary, JSON or XML with archive polymorphism.
+description: >
+  Serializes and restores an object graph through a single templated
+  interface: every type declares one serialize function, and the archive
+  chosen at runtime decides the wire format (binary, JSON, XML). Supports
+  versioning, pointers and containers, which makes it suitable for save
+  games and asset metadata.
+reference_games:
+  - (engine-agnostic serialization library)
+genre_tags: [engine, tooling]
+capability:
+  inputs:
+    - { name: game_state, type: Object }
+    - { name: archive_format, type: ArchiveFormat }
+  outputs:
+    - { name: serialized_bytes, type: ByteBuffer }
+    - { name: restored_state, type: Object }
+  events:
+    - { name: SerializationCompleted }
+  dependencies: []
+  invariants:
+    - "Round-tripping a state through serialize then deserialize yields an equal object graph."
+    - "A versioned archive can be read by a reader that knows the older version."
+  determinism: best-effort
+implementations:
+  - engine: engine-agnostic
+    language: C++
+    url: https://github.com/USCiLab/cereal
+    license: BSD-3-Clause
+    maturity: production-tested
+license: CC-BY-4.0
+provenance:
+  type: open_source_derived
+  derived_from: https://github.com/USCiLab/cereal
+  notes: >
+    Written from direct inspection of the real, public, BSD-3-Clause
+    repository.
+version: 0.1.0
