@@ -61,11 +61,11 @@ while leaving room (but making no promises) for deeper composition later.
   a CLI that reads the same data. No backend service, no database, no code
   execution. Submissions arrive as pull requests.
 - **Intermediate** (alpha, 1–3 months): read-only REST API and an MCP server
-  wrapping the same static index; lightweight accounts for voting/bookmarking
-  (first real reason to add a database); CI that validates schema + a
+  wrapping the same static index; CI that validates schema + a
   provenance/license gate; a handful of real multi-engine implementations per
   capability to pressure-test that the schema isn't accidentally
-  engine-biased.
+  engine-biased. The catalog stays read-only and consumption-oriented: no
+  accounts, votes, bookmarks, or any per-user state (see section H).
 - **Long-term**: executable capability contracts (behavior-level, not just
   metadata), adapter generation tooling, and — only if the narrow-families bet
   pays off — a composition/build pipeline for the families where it actually
@@ -76,6 +76,11 @@ while leaving room (but making no promises) for deeper composition later.
   any hosted execution of untrusted code, runtime composition/adapter
   generation, accounts/payments, benchmarking infrastructure, a custom engine
   or IR runtime.
+
+DecDev is a **PyPI-like take-from registry**: the product is a place to
+discover and pull capability specs and their linked implementations, not a
+community or social network. That framing is load-bearing — it is *why*
+there is no database, no auth, and no per-user state anywhere in the plan.
 
 **External component sources (community "plugins").** The CLI accepts
 repeatable `--source <DIR>` directories of additional component specs,
@@ -202,9 +207,15 @@ effectively $0, and git history *is* the provenance/audit trail for free.
 Concrete layout: [`specs/02-repo-layout.md`](../specs/02-repo-layout.md) and
 [`specs/03-website.md`](../specs/03-website.md).
 
-Alpha: introduce a small database (SQLite is sufficient at this scale) only
-when a feature genuinely needs mutable, per-user state — voting/bookmarking,
-accounts. Don't introduce it earlier just because "a real site has a
+Alpha: still **no database**. The alpha tier adds read-only HTTP/MCP
+surfaces over the same files-in-git index, never mutable server state.
+Accounts, votes, bookmarks and other per-user data were considered and
+explicitly **rejected** — DecDev is a PyPI-like take-from registry, not a
+social platform (section K), and building them would trade away the
+zero-infra, no-secrets model for a nice-to-have signal. GitHub stars/forks
+and pull requests remain the only social layer. If a *future* feature ever
+genuinely needs mutable state, that is a deliberate architecture change to be
+argued here first — not a default, and never justified by "a real site has a
 database."
 
 ## I. Security and trust
@@ -270,6 +281,13 @@ need and publishing the byproduct, discovery/attribution, portfolio value) —
 no monetization, badges, or "verified/benchmarked" status in MVP or alpha;
 those require infrastructure (sections A/I) deliberately deferred.
 
+This is a deliberate product shape, not an unfinished one: DecDev is a
+PyPI-like *take-from* registry. People come to discover, compare and pull
+capability specs; contribution happens through git pull requests, and GitHub
+already provides every social primitive (stars, forks, issues, blame) this
+project needs. DecDev itself does not plan accounts, votes, bookmarks, or any
+per-user state — see section H.
+
 ## L. Development plan
 
 Concrete, file-level task lists: [`specs/06-build-plan.md`](../specs/06-build-plan.md).
@@ -282,6 +300,6 @@ Summary:
    (`search`/`show`/`list`/`validate`), CONTRIBUTING guide + spec template,
    30–50 seeded components.
 3. **1–3 month alpha**: read-only REST API + MCP server over the same index,
-   voting/bookmarking (first real DB), manually-asserted (not computed)
-   compatibility tags between a few component pairs, IR nudged toward v0.1
-   based on what the first 50+ real specs revealed was missing.
+   manually-asserted (not computed) compatibility tags between a few
+   component pairs, IR nudged toward v0.1 based on what the first 50+ real
+   specs revealed was missing.

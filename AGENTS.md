@@ -35,9 +35,14 @@ up work here, your first job is almost certainly something from
 - No proprietary game source, ROMs, extracted assets, textures, models, or
   audio — ever, in any form, including as "reference material" in a commit.
   `reference_games` fields are named inspirations only.
-- Infra budget is effectively $0: static hosting, no managed database,
-  until a feature genuinely can't work without one (see
-  `specs/06-build-plan.md` Tier 3, task 12 — the first one that needs a DB).
+- Infra budget is effectively $0: static hosting, no managed database. DecDev
+  is a PyPI-like *take-from* registry, not a social platform — accounts,
+  votes, bookmarks and any per-user state are **not planned** (task 12 was
+  decided against; see `docs/architecture.md` sections A/H/K). Don't add a
+  database, auth, or a backend framework unless a future feature genuinely
+  can't work without one, and change those architecture sections first.
+- The backend (the read-only REST API in `api/` and the MCP server in
+  `mcp/`) is read-only; do not add write endpoints or mutable server state.
 - Every component spec under `/components` must validate against
   `/schema/component.schema.json` (once it exists). A PR that adds an
   invalid spec should fail CI, not get hand-waved.

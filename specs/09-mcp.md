@@ -57,5 +57,6 @@ tool error (`isError: true`), not a protocol error.
 ## Non-goals
 
 No write tools, no resources/prompts/sampling, no HTTP/SSE transport, no
-auth, no database, no `--source` fetching. Voting/bookmarking stays the
-separate DB task; `api/` (`specs/08-api.md`) is the HTTP surface.
+auth, no database, no `--source` fetching. Accounts/votes/bookmarks and any
+per-user state are explicitly **not planned** (`docs/architecture.md`
+sections A/H/K); `api/` (`specs/08-api.md`) is the HTTP surface.

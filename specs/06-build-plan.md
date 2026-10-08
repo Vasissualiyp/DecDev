@@ -149,14 +149,14 @@ No website, no full CLI, no CI yet beyond the scaffolding above.
     load-on-startup as the CLI; 9 handler/dispatcher tests in
     `mcp/tests/mcp.rs`; smoke-tested over real stdio (initialize,
     tools/list, tools/call search/show against the 30-component catalog).
-12. Minimal accounts + voting/bookmarking. This is the first feature that
-    needs a real database — use SQLite via `rusqlite` (Rust, same
-    workspace; no ORM needed at this scale), most likely as part of the
-    `api/` crate from task 10 since that's where request handling already
-    lives. **Done when**: a logged-in user can bookmark a component and
-    see it persist across a session, *and* tests cover bookmark-add,
-    bookmark-remove, duplicate-bookmark (idempotent, not an error), and
-    bookmarking an unknown slug (rejected).
+12. ⛔ **Not planned — accounts + voting/bookmarking.** Decided against.
+    DecDev is a PyPI-like *take-from* registry, not a social platform; this
+    was the one feature that would have forced a database, auth, and
+    mutable per-user state, trading away the zero-infra/no-secrets model
+    for a nice-to-have signal. GitHub stars/forks and PRs remain the only
+    social layer. Do not reintroduce accounts, votes, bookmarks, or any
+    per-user state without first changing `docs/architecture.md` sections
+    A/H/K. The API and MCP server stay read-only.
 13. Manually-asserted compatibility tags between a handful of component
     pairs (a free-text or small-enum field maintainers add by hand after
     actually trying the pair together) — explicitly not computed. **Done

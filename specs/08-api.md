@@ -41,6 +41,7 @@ appropriate status code.
 
 No write endpoints, no auth/accounts, no database, no pagination or search
 index (the whole catalog fits in memory at this scale), no hot reload, and
-no fetching/cloning of `--source` directories. Voting/bookmarking is a
-separate later Tier 3 task (the first one that needs a database); the MCP
-server is its own crate (Tier 3 task 11).
+no fetching/cloning of `--source` directories. Accounts, votes, bookmarks
+and any per-user state are explicitly **not planned** — DecDev is a
+read-only, PyPI-like take-from registry (`docs/architecture.md` sections
+A/H/K). The MCP server is its own crate (Tier 3 task 11).
